@@ -10,21 +10,27 @@ namespace P2P_Chat.ViewModels.Commands
     internal class Connect:ICommand
     {
         public event EventHandler? CanExecuteChanged;
-        private MainViewModel _parent;
 
-        public MainViewModel Parent
-        {
-            get { return _parent; }
-            set { _parent = value; }
-        }
+        public MainViewModel Parent { get; set; }
 
         public Connect(MainViewModel parent)
         {
             this.Parent = parent;
         }
 
-        public bool CanExecute(object? parameter)
+        public bool CanExecute(object ? parameter)
         {
+            //if (parameter != null)
+            //{
+            //    var s = parameter as string;
+            //    s = s.Trim();
+            //    if(string.IsNullOrEmpty(s))
+            //    {
+            //        return false;
+            //    }
+            //    return true;
+
+            //}
             return true;
         }
 

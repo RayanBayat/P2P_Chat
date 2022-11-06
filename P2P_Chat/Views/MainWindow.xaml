@@ -6,21 +6,37 @@
         xmlns:local="clr-namespace:P2P_Chat.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid Height="100" Margin="10">
+    <Grid Height="400" Margin="10">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*">
+
+            </ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
         </Grid.RowDefinitions>
 
+        <!--<TextBox Text="{Binding Path=MessageToSend}" Margin="0,0,119,53" Grid.ColumnSpan="2"></TextBox>
+        <Button Grid.Row="0" Grid.Column="1" Command="{Binding PushCommand}" Margin="0,0,0,53" >Send Message!</Button>-->
 
-        <TextBox Text="{Binding Path=MessageToSend}"></TextBox>
-        <Button Grid.Row="0" Grid.Column="1" Command="{Binding PushCommand}" >Send Message!</Button>
-        <TextBox  Grid.Row="1" Grid.Column="0" Text="{Binding Path=ToIP}"></TextBox>
-        <Button Grid.Row="1" Grid.Column="2" Command="{Binding ToIPCommand}" >Type Ip</Button>
+
+        <!--port and ip-->
+        <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,223,53" Grid.ColumnSpan="2"></TextBox>
+        <TextBox Text="{Binding Path=port}" Margin="0,27,223,27" Grid.ColumnSpan="2"/>
+        <Button Command="{Binding ToIPCommand}" Margin="0,54,223,0" Grid.ColumnSpan="2" >Connect</Button>
+        <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
+
+        <!--name-->
+        <TextBox  Grid.Column="2" Text="{Binding Path=ToIP}" Margin="0,1,111,53" Grid.ColumnSpan="2"/>
+        <Label Grid.Row="0" Grid.Column="3" Content="Name" Margin="0,1,0,53" HorizontalAlignment="Left" Width="60"/>
 
     </Grid>
 </Window>
