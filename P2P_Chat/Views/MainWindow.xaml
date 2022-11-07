@@ -4,16 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:P2P_Chat.Views"
+        xmlns:vm ="clr-namespace:P2P_Chat.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    
     <Grid Height="400" Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*">
-
-            </ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"></RowDefinition>
@@ -22,21 +23,34 @@
             <RowDefinition Height="7*"></RowDefinition>
             <RowDefinition Height="7*"></RowDefinition>
         </Grid.RowDefinitions>
+        <!--<Grid.Resources>
+            <vm:MainViewModel x:Key="vmc"/>
+        </Grid.Resources>-->
 
-        <!--<TextBox Text="{Binding Path=MessageToSend}" Margin="0,0,119,53" Grid.ColumnSpan="2"></TextBox>
-        <Button Grid.Row="0" Grid.Column="1" Command="{Binding PushCommand}" Margin="0,0,0,53" >Send Message!</Button>-->
+        <TextBox Grid.Column="3" Text="{Binding Path=MessageToSend}"/>
+        <Button Grid.Row="0" Grid.Column="2" Command="{Binding PushCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" >Send Message!</Button>
 
 
         <!--port and ip-->
         <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,223,53" Grid.ColumnSpan="2"></TextBox>
         <TextBox Text="{Binding Path=port}" Margin="0,27,223,27" Grid.ColumnSpan="2"/>
-        <Button Command="{Binding ToIPCommand}" Margin="0,54,223,0" Grid.ColumnSpan="2" >Connect</Button>
+        <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,54,334,0" Grid.ColumnSpan="2" >Connect</Button>
+        <Button Command="{Binding ListenCommand}" Margin="111,54,223,0" Grid.ColumnSpan="2" >Listen</Button>
         <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 
         <!--name-->
-        <TextBox  Grid.Column="2" Text="{Binding Path=ToIP}" Margin="0,1,111,53" Grid.ColumnSpan="2"/>
-        <Label Grid.Row="0" Grid.Column="3" Content="Name" Margin="0,1,0,53" HorizontalAlignment="Left" Width="60"/>
 
+        <CheckBox  Grid.Column="2" Name = "PCheckBox" Content = "On call" Margin="0,0,128,53" />
+        <Popup IsOpen="{Binding Path=PopUpActive}" Width="150" Height="100"
+               PlacementTarget="{Binding ElementName=connect}"
+               AllowsTransparency="True" PopupAnimation="Fade">
+            <StackPanel>
+                <Label Background="Aqua" Content="Incoming connection!"/>
+                <Button Command="{Binding AcceptConnectionCommand}">Accept</Button>
+                <Button Command="{Binding DeclineConnectionCommand}">Decline</Button>
+            </StackPanel>
+
+        </Popup>
     </Grid>
 </Window>
