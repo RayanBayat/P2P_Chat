@@ -32,10 +32,10 @@
 
 
         <!--port and ip-->
-        <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,223,53" Grid.ColumnSpan="2"></TextBox>
-        <TextBox Text="{Binding Path=port}" Margin="0,27,223,27" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,0,53"/>
+        <TextBox Text="{Binding Path=port}" Margin="0,27,0,27"/>
         <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,54,334,0" Grid.ColumnSpan="2" >Connect</Button>
-        <Button Command="{Binding ListenCommand}" Margin="111,54,223,0" Grid.ColumnSpan="2" >Listen</Button>
+        <Button Command="{Binding ListenCommand}" Margin="139,53,0,1" >Listen</Button>
         <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 

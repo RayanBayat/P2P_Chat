@@ -7,13 +7,29 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Text.Json;
+using System.ComponentModel;
 
 namespace P2P_Chat.Models
 {
-    public class ConnectionHandler
+
+    public class Message 
+    {
+        public string jsrequesttype { get; set; }
+
+        public string jsname { get; set; }
+        public string jsmsg { get; set; }
+
+        
+    }   
+
+
+    public class ConnectionHandler : INotifyPropertyChanged
     {
         TcpClient? client;
         TcpListener? server;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public void sendMessage(String message)
         {
             // Here is the code which sends the data over the network.
@@ -37,9 +53,12 @@ namespace P2P_Chat.Models
         {
             try
             {
+                MessageBox.Show("starting to listen");
                 IPAddress localAddr = IPAddress.Parse(ip);
                 server = new TcpListener(localAddr, port);
                 server.Start();
+                Thread thread = new Thread(new ThreadStart(listeningloop));
+                thread.Start();
             }
             catch (SocketException e)
             {
@@ -54,10 +73,23 @@ namespace P2P_Chat.Models
 
                 try
                 {
-                    message += "\n";
-                    // Console.WriteLine(tcpc);
-                    // Translate the passed message into ASCII and store it as a Byte array.
-                    Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+
+                var Message = new Message
+                {
+                    jsrequesttype = "BasicChat",
+
+                    jsname = "nigga",
+
+                    jsmsg = message
+                   
+                };
+                string json_data = JsonSerializer.Serialize(Message);
+
+                
+
+                // Console.WriteLine(tcpc);
+                // Translate the passed message into ASCII and store it as a Byte array.
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
 
                     // Get a client stream for reading and writing.
                     NetworkStream stream = client.GetStream();
@@ -77,16 +109,41 @@ namespace P2P_Chat.Models
         }
             private void listeningloop()
         {
+            MessageBox.Show("nigga");
             while (true)
             {
                 Byte[] bytes = new Byte[8096];
                 String data = null;
 
                 client = server.AcceptTcpClient();
-                data = null;
+                
+       
                 NetworkStream stream = client.GetStream();
+                int i;
+
+                // Loop to receive all the data sent by the client.
+                while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                {
+                    // Translate data bytes to a ASCII string.
+                    data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+
+                    string jsondata = data;
+
+                    Message? msg = JsonSerializer.Deserialize<Message>(jsondata);
+
+                    MessageBox.Show(msg.jsmsg, msg.jsrequesttype);
+                   // Console.WriteLine("Sent: {0}", data);
+                }
             }
 
+
+        }
+        void OnPropertyChanged(string property)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
+            }
         }
 
     }
