@@ -18,10 +18,61 @@ namespace P2P_Chat.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
         private bool _popupActive;
         public ConnectionHandler Connection { get; set; }
-        public String ToIP { get; set; }
+
+        private String toIP;
+        public String ToIP
+        {
+            get
+            {
+                return toIP;
+            }
+            set
+            {
+                toIP = value;
+            }
+        }
         public Int32 port { get; set; }
-        public String MessageToSend { get; set; }
-        public ICommand PushCommand { get; set; }
+
+        private String messageToSend;
+        public String MessageToSend {
+            get
+            {
+                return messageToSend;
+            }
+            set
+            {
+                messageToSend = value;
+            }
+
+        }
+        private String messagerec;
+        public String Messagerec
+        {
+            get
+            {
+                return messagerec;
+            }
+            set
+            {
+                messagerec = value;
+            }
+
+        }
+        private String conv;
+        public String conversation 
+        {
+            get
+            {
+                return conv;
+            }
+            set
+            {
+                conv = value;
+                OnPropertyChanged("conversation");
+            }
+        
+        }
+        public ICommand MessageCommand { get; set; }
         public ICommand ToIPCommand { get; set; }
         public ICommand ListenCommand { get; set; }
 
@@ -39,14 +90,16 @@ namespace P2P_Chat.ViewModels
             // prenumere på event från connection handler
             connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
             this.ToIPCommand = new Connect(this);
-            this.PushCommand = new SendMessageCommand(this);
+            this.MessageCommand = new SendMessageCommand(this);
             this.ListenCommand = new Listen(this);
             PopUpActive = true;
         }
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            throw new NotImplementedException();
+           
+           // MessageBox.Show(e. + e.PropertyName + " has changed");
+          //  throw new NotImplementedException();
         }
 
 
@@ -57,7 +110,7 @@ namespace P2P_Chat.ViewModels
         public void sendMessage()
         {
             Connection.senddata(MessageToSend);
-            
+            conversation = MessageToSend;
         }
         public void establishConnection()
         {
@@ -66,6 +119,15 @@ namespace P2P_Chat.ViewModels
         public void startListening()
         {
             Connection.startListening(ToIP, port);
+        }
+
+        void OnPropertyChanged(string property)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(property));
+                MessageBox.Show("changed");
+            }
         }
 
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

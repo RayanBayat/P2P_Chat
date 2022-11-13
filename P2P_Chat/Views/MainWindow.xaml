@@ -7,14 +7,14 @@
         xmlns:vm ="clr-namespace:P2P_Chat.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    
+
     <Grid Height="400" Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
-            
+
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"></RowDefinition>
@@ -28,7 +28,7 @@
         </Grid.Resources>-->
 
         <TextBox Grid.Column="3" Text="{Binding Path=MessageToSend}"/>
-        <Button Grid.Row="0" Grid.Column="2" Command="{Binding PushCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" >Send Message!</Button>
+        <Button Grid.Row="0" Grid.Column="2" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" >Send Message!</Button>
 
 
         <!--port and ip-->
@@ -38,6 +38,9 @@
         <Button Command="{Binding ListenCommand}" Margin="139,53,0,1" >Listen</Button>
         <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
+
+        <!--for messages-->
+        <TextBlock  HorizontalAlignment="Center" Margin="0,10,0,0" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Path=conversation, Mode=TwoWay}" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="300" Grid.RowSpan="4" Width="370"/>
 
         <!--name-->
 

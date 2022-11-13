@@ -13,21 +13,39 @@ using System.ComponentModel;
 namespace P2P_Chat.Models
 {
 
-    public class Message 
-    {
-        public string jsrequesttype { get; set; }
-
-        public string jsname { get; set; }
-        public string jsmsg { get; set; }
-
-        
-    }   
+ 
 
 
     public class ConnectionHandler : INotifyPropertyChanged
     {
+        public class Message
+        {
+
+            public string jsrequesttype { get; set; }
+
+            public string jsname { get; set; }
+            public string jsmsg { get; set; }
+
+
+        }
+
         TcpClient? client;
         TcpListener? server;
+        public string ab;
+        public string a
+        {
+            get
+            {
+                return ab;
+            }
+            set
+            {
+                ab = value;
+                OnPropertyChanged(ab);
+
+            }
+
+        }
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public void sendMessage(String message)
@@ -38,6 +56,8 @@ namespace P2P_Chat.Models
         }
         public void connect(String ip, Int32 port)
         {
+            port = 21;
+            ip = "127.0.0.1";
             try
             {
                 client = new TcpClient(ip, port);
@@ -84,6 +104,8 @@ namespace P2P_Chat.Models
                     jsmsg = message
                    
                 };
+
+                a = message;
                 string json_data = JsonSerializer.Serialize(Message);
 
                 
@@ -144,6 +166,7 @@ namespace P2P_Chat.Models
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
+                MessageBox.Show("something changed");
             }
         }
 
