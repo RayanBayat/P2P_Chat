@@ -36,13 +36,20 @@ namespace P2P_Chat.ViewModels
         public MainViewModel(ConnectionHandler connectionHandler)
         {
             this.Connection = connectionHandler;
+            // prenumere på event från connection handler
+            connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
             this.ToIPCommand = new Connect(this);
             this.PushCommand = new SendMessageCommand(this);
             this.ListenCommand = new Listen(this);
             PopUpActive = true;
         }
 
-       
+        private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
 
 

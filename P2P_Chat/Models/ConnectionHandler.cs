@@ -58,6 +58,7 @@ namespace P2P_Chat.Models
                 server = new TcpListener(localAddr, port);
                 server.Start();
                 Thread thread = new Thread(new ThreadStart(listeningloop));
+                thread.Name = "en annan tråd";
                 thread.Start();
             }
             catch (SocketException e)
@@ -78,7 +79,7 @@ namespace P2P_Chat.Models
                 {
                     jsrequesttype = "BasicChat",
 
-                    jsname = "nigga",
+                    jsname = "someone",
 
                     jsmsg = message
                    
@@ -109,7 +110,7 @@ namespace P2P_Chat.Models
         }
             private void listeningloop()
         {
-            MessageBox.Show("nigga");
+            MessageBox.Show(Thread.CurrentThread.Name);
             while (true)
             {
                 Byte[] bytes = new Byte[8096];
