@@ -139,8 +139,16 @@ namespace P2P_Chat.Models
                 String data = null;
 
                 client = server.AcceptTcpClient();
-                
-       
+                if (client != null)
+                {
+                    MessageBox.Show("client connected");
+                    client.Close();
+                    continue;
+                }
+                //if (client == null)
+                //{
+                //    client.Close();
+                //}
                 NetworkStream stream = client.GetStream();
                 int i;
 
