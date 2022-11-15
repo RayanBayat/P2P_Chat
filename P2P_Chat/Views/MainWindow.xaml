@@ -27,8 +27,8 @@
             <vm:MainViewModel x:Key="vmc"/>
         </Grid.Resources>-->
 
-        <TextBox Grid.Column="3" Text="{Binding Path=MessageToSend}"/>
-        <Button Grid.Row="0" Grid.Column="2" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" >Send Message!</Button>
+        <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=MessageToSend}" Margin="0,0,0,27" Grid.ColumnSpan="2"/>
+        <Button Grid.Row="4" Grid.Column="0" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" Grid.ColumnSpan="2" >Send Message!</Button>
 
 
         <!--port and ip-->
@@ -39,8 +39,6 @@
         <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 
-        <!--for messages-->
-        <TextBlock  HorizontalAlignment="Center" Margin="0,10,0,0" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Path=conversation, Mode=TwoWay}" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="300" Grid.RowSpan="4" Width="370"/>
 
         <!--name-->
 
@@ -55,5 +53,14 @@
             </StackPanel>
 
         </Popup>
+        <!--messages-->
+        <!--TODO använd Panel-->
+            <ListView Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Path=Messageslist}" Height="240" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="3">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="messages" Width="120" DisplayMemberBinding="{Binding Path=msgrec}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>

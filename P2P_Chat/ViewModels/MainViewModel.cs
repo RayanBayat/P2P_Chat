@@ -2,6 +2,7 @@
 using P2P_Chat.ViewModels.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -16,10 +17,32 @@ namespace P2P_Chat.ViewModels
     public class MainViewModel :INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-        private bool _popupActive;
-        public ConnectionHandler Connection { get; set; }
 
+        private bool _popupActive;
+        private String messagerec;
         private String toIP;
+        private ConnectionHandler connection;
+        private Int32 port;
+        private String messageToSend;
+        private ObservableCollection<Messagelist> messageslist;
+
+        public struct Messagelist
+        {
+            public string? msgrec { get; set; }
+        }
+
+        public ConnectionHandler Connection
+        {
+            get
+            {
+                return connection;
+            }
+            set
+            {
+                connection = value;
+            }
+        }
+
         public String ToIP
         {
             get
@@ -31,9 +54,20 @@ namespace P2P_Chat.ViewModels
                 toIP = value;
             }
         }
-        public Int32 port { get; set; }
 
-        private String messageToSend;
+        public Int32 Port
+        {
+            get
+            {
+                return port;
+            }
+            set
+            {
+                port = value;
+            }
+        }
+
+
         public String MessageToSend {
             get
             {
@@ -45,38 +79,39 @@ namespace P2P_Chat.ViewModels
             }
 
         }
-        private String messagerec;
-        public String Messagerec
-        {
-            get
-            {
-                return messagerec;
-            }
-            set
-            {
-                messagerec = value;
-            }
 
-        }
-        private String conv;
-        public String conversation 
+        public bool PopUpActive
         {
             get
             {
-                return conv;
+                return _popupActive;
+
             }
             set
             {
-                conv = value;
-                OnPropertyChanged("conversation");
+                _popupActive = value;
+                OnPropertyChanged("PopupActive");
             }
-        
         }
+        public ObservableCollection<Messagelist> Messageslist
+        {
+            get
+            {
+                return messageslist;
+            }
+            set
+            {
+                messageslist = value;
+                OnPropertyChanged("Messageslist");
+            }
+        }
+
+       
+      
         public ICommand MessageCommand { get; set; }
         public ICommand ToIPCommand { get; set; }
         public ICommand ListenCommand { get; set; }
 
-        public bool PopUpActive { get; set; }
         //{
         //    get { return _popupActive; }
         //    set { _popupActive = value;
@@ -89,15 +124,19 @@ namespace P2P_Chat.ViewModels
             this.Connection = connectionHandler;
             // prenumere på event från connection handler
             connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
+
             this.ToIPCommand = new Connect(this);
             this.MessageCommand = new SendMessageCommand(this);
             this.ListenCommand = new Listen(this);
-            PopUpActive = true;
+            messageslist = new ObservableCollection<Messagelist>();
         }
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-           
+            if (e.PropertyName == "Call_Incoming")
+            {
+                PopUpActive = connection.Call_Incoming;
+            }
            // MessageBox.Show(e. + e.PropertyName + " has changed");
           //  throw new NotImplementedException();
         }
@@ -109,16 +148,16 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            Connection.senddata(MessageToSend);
-            conversation = MessageToSend;
+            Connection.prepare_to_send(MessageToSend);
+            Messageslist.Add(new Messagelist { msgrec = MessageToSend});
         }
         public void establishConnection()
         {
-            Connection.connect(ToIP, port);
+            Connection.connect(ToIP, Port);
         }
         public void startListening()
         {
-            Connection.startListening(ToIP, port);
+            Connection.startListening(Port);
         }
 
         void OnPropertyChanged(string property)

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Text.Json;
 using System.ComponentModel;
+using static P2P_Chat.Models.ConnectionHandler;
 
 namespace P2P_Chat.Models
 {
@@ -28,7 +29,22 @@ namespace P2P_Chat.Models
 
 
         }
+        bool connectionisAccepted, callincoming;
 
+        private bool call_incoming;
+
+        public bool Call_Incoming
+        {
+            get
+            {
+                return callincoming;
+            }
+            set
+            {
+                callincoming = value;
+                OnPropertyChanged("Call_Incoming");
+            }
+        }
         TcpClient? client;
         TcpListener? server;
         public string ab;
@@ -61,18 +77,31 @@ namespace P2P_Chat.Models
             try
             {
                 client = new TcpClient(ip, port);
+                var handshake = new Message
+                {
+                    jsrequesttype = "HandShake",
+
+                    jsname = "Rayan",
+
+                    jsmsg = ""
+
+
+                };
+                senddata(handshake);
             }
             catch (SocketException e)
             {
-                MessageBox.Show("No one is listening on IP " + ip + " and port " + port);
+                MessageBox.Show("No one is listening on IP " + ip + " and Port " + port);
                
             }
            
         }
-        public void startListening(String ip, Int32 port)
+        public void startListening(Int32 port)
         {
             try
             {
+                port = 21;
+                string ip = "127.0.0.1";
                 MessageBox.Show("starting to listen");
                 IPAddress localAddr = IPAddress.Parse(ip);
                 server = new TcpListener(localAddr, port);
@@ -83,30 +112,34 @@ namespace P2P_Chat.Models
             }
             catch (SocketException e)
             {
-                MessageBox.Show("Cannot listen to IP " + ip + " and port " + port);
+                MessageBox.Show("Cannot listen to Port " + port);
 
             }
 
         }
 
-        public void senddata(String message)
+        public void prepare_to_send(String message)
+        {
+            var Message = new Message
+            {
+                jsrequesttype = "BasicChat",
+
+                jsname = "Rayan",
+
+                jsmsg = message
+
+            };
+            senddata(Message);
+        }
+        public void senddata(Message message)
         {
 
                 try
                 {
 
-                var Message = new Message
-                {
-                    jsrequesttype = "BasicChat",
 
-                    jsname = "someone",
 
-                    jsmsg = message
-                   
-                };
-
-                a = message;
-                string json_data = JsonSerializer.Serialize(Message);
+                string json_data = JsonSerializer.Serialize(message);
 
                 
 
@@ -139,12 +172,14 @@ namespace P2P_Chat.Models
                 String data = null;
 
                 client = server.AcceptTcpClient();
-                if (client != null)
-                {
+                //if (client != null)
+                //{
+                    connectionisAccepted = true;
                     MessageBox.Show("client connected");
-                    client.Close();
-                    continue;
-                }
+                    Call_Incoming = true;
+                   // client.Close();
+                   // continue;
+                //}
                 //if (client == null)
                 //{
                 //    client.Close();
@@ -174,7 +209,6 @@ namespace P2P_Chat.Models
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
-                MessageBox.Show("something changed");
             }
         }
 
