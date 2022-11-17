@@ -31,18 +31,19 @@
         <Button Grid.Row="4" Grid.Column="0" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" Grid.ColumnSpan="2" >Send Message!</Button>
 
 
+        <TextBox Grid.Column="1" Grid.Row="0" x:Name="name" Text="{Binding Path=Name}" Margin="42,0,43,53"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="Name" Margin="152,0,0,53"/>
         <!--port and ip-->
         <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,0,53"/>
         <TextBox Text="{Binding Path=port}" Margin="0,27,0,27"/>
-        <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,54,334,0" Grid.ColumnSpan="2" >Connect</Button>
-        <Button Command="{Binding ListenCommand}" Margin="139,53,0,1" >Listen</Button>
-        <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,60,53"/>
+        <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,53,139,1" >Connect</Button>
+        <Button Command="{Binding ListenCommand}" Margin="56,53,83,1" >Host</Button>
+        <Button Command="{Binding DisconnectCommand}" Margin="112,53,17,1" >Disconnect</Button>
+        <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,165,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 
 
         <!--name-->
-
-        <CheckBox  Grid.Column="2" Name = "PCheckBox" Content = "On call" Margin="0,0,128,53" />
         <Popup IsOpen="{Binding Path=PopUpActive}" Width="150" Height="100"
                PlacementTarget="{Binding ElementName=connect}"
                AllowsTransparency="True" PopupAnimation="Fade">
@@ -55,12 +56,17 @@
         </Popup>
         <!--messages-->
         <!--TODO använd Panel-->
-            <ListView Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Path=Messageslist}" Height="240" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="3">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="messages" Width="120" DisplayMemberBinding="{Binding Path=msgrec}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <StackPanel Grid.Column="0" Grid.Row="1" CanVerticallyScroll="True" Margin="0,5,10,10" Grid.RowSpan="3" Grid.ColumnSpan="2">
+            <ListView  ItemsSource="{Binding Path=Messageslist}" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="3"
+                                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                  ScrollViewer.CanContentScroll="True">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=_names}" />
+                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Path=_messages}" Width="300"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
     </Grid>
 </Window>

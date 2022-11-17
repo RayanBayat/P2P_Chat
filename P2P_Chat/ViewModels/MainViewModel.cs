@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace P2P_Chat.ViewModels
 {
@@ -18,28 +19,39 @@ namespace P2P_Chat.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
+
+
         private bool _popupActive;
-        private String messagerec;
-        private String toIP;
-        private ConnectionHandler connection;
-        private Int32 port;
-        private String messageToSend;
-        private ObservableCollection<Messagelist> messageslist;
+        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend;
+        private Int32 _port = 21;
+
+
+        private ConnectionHandler _connection;
+        private ObservableCollection<Messagelist> _messageslist;
+
+        //commands
+        public ICommand MessageCommand { get; set; }
+        public ICommand ToIPCommand { get; set; }
+        public ICommand ListenCommand { get; set; }
+        public ICommand AcceptConnectionCommand { get; set; }
+        public ICommand DeclineConnectionCommand { get; set; }
+        public ICommand DisconnectCommand { get; set; }
 
         public struct Messagelist
         {
-            public string? msgrec { get; set; }
+            public string? _messages { get; set; }
+            public string? _names{ get; set; }
         }
 
         public ConnectionHandler Connection
         {
             get
             {
-                return connection;
+                return _connection;
             }
             set
             {
-                connection = value;
+                _connection = value;
             }
         }
 
@@ -47,11 +59,11 @@ namespace P2P_Chat.ViewModels
         {
             get
             {
-                return toIP;
+                return _toIP;
             }
             set
             {
-                toIP = value;
+                _toIP = value;
             }
         }
 
@@ -59,11 +71,11 @@ namespace P2P_Chat.ViewModels
         {
             get
             {
-                return port;
+                return _port;
             }
             set
             {
-                port = value;
+                _port = value;
             }
         }
 
@@ -71,11 +83,11 @@ namespace P2P_Chat.ViewModels
         public String MessageToSend {
             get
             {
-                return messageToSend;
+                return _messageToSend;
             }
             set
             {
-                messageToSend = value;
+                _messageToSend = value;
             }
 
         }
@@ -97,45 +109,55 @@ namespace P2P_Chat.ViewModels
         {
             get
             {
-                return messageslist;
+                return _messageslist;
             }
             set
             {
-                messageslist = value;
+                _messageslist = value;
                 OnPropertyChanged("Messageslist");
+            }
+        }
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
             }
         }
 
        
       
-        public ICommand MessageCommand { get; set; }
-        public ICommand ToIPCommand { get; set; }
-        public ICommand ListenCommand { get; set; }
 
-        //{
-        //    get { return _popupActive; }
-        //    set { _popupActive = value;
-        //     //   OnPropertyChanged("PopUpActive");
-        //    }
-        //}
+
 
         public MainViewModel(ConnectionHandler connectionHandler)
         {
             this.Connection = connectionHandler;
-            // prenumere på event från connection handler
+            // prenumere på event från _connection handler
             connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
 
             this.ToIPCommand = new Connect(this);
             this.MessageCommand = new SendMessageCommand(this);
             this.ListenCommand = new Listen(this);
-            messageslist = new ObservableCollection<Messagelist>();
+            this.AcceptConnectionCommand = new AcceptConnectionCommand(this);
+            this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
+            this.DisconnectCommand = new DisconnectCommand(this);
+            _messageslist = new ObservableCollection<Messagelist>();
         }
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Call_Incoming")
             {
-                PopUpActive = connection.Call_Incoming;
+                PopUpActive = _connection.Call_Incoming;
+            }
+            else if(e.PropertyName == "Messages")
+            {
+                print_on_screen(_connection.Messages.jsname, _connection.Messages.jsmsg);
             }
            // MessageBox.Show(e. + e.PropertyName + " has changed");
           //  throw new NotImplementedException();
@@ -148,8 +170,16 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            Connection.prepare_to_send(MessageToSend);
-            Messageslist.Add(new Messagelist { msgrec = MessageToSend});
+            Connection.prepare_to_send(Name,MessageToSend);
+            print_on_screen(Name, MessageToSend);
+        }
+
+        public void print_on_screen(String name,String msg)
+        {
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+                Messageslist.Add(new Messagelist { _names = name, _messages = msg });
+            });
         }
         public void establishConnection()
         {
@@ -165,8 +195,19 @@ namespace P2P_Chat.ViewModels
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(property));
-                MessageBox.Show("changed");
             }
+        }
+        public void AcceptConnection()
+        {
+            _connection.accept_connection();
+        }
+        public void DeclineConnection()
+        {
+            _connection.decline_connection();
+        }
+        public void Disconnect()
+        {
+            _connection.close_connection();
         }
 
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

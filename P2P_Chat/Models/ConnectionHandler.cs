@@ -10,29 +10,47 @@ using System.Windows;
 using System.Text.Json;
 using System.ComponentModel;
 using static P2P_Chat.Models.ConnectionHandler;
+using System.Windows.Interop;
+using System.IO;
 
 namespace P2P_Chat.Models
 {
 
- 
 
 
+    public class Message
+    {
+
+        public string jsrequesttype { get; set; }
+
+        public string jsname { get; set; }
+        public string jsmsg { get; set; }
+
+
+    }
     public class ConnectionHandler : INotifyPropertyChanged
     {
-        public class Message
-        {
 
-            public string jsrequesttype { get; set; }
-
-            public string jsname { get; set; }
-            public string jsmsg { get; set; }
-
-
-        }
         bool connectionisAccepted, callincoming;
-
         private bool call_incoming;
+        private Message _messages;
+        TcpClient? client;
+        TcpListener? server;
+        NetworkStream? stream;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
+        public Message Messages
+        {
+            get
+            {
+                return _messages;
+            }
+            set
+            {
+               _messages = value;
+                OnPropertyChanged("Messages");
+            }
+        }
         public bool Call_Incoming
         {
             get
@@ -42,41 +60,24 @@ namespace P2P_Chat.Models
             set
             {
                 callincoming = value;
+               
                 OnPropertyChanged("Call_Incoming");
             }
         }
-        TcpClient? client;
-        TcpListener? server;
-        public string ab;
-        public string a
-        {
-            get
-            {
-                return ab;
-            }
-            set
-            {
-                ab = value;
-                OnPropertyChanged(ab);
 
-            }
-
-        }
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public void sendMessage(String message)
         {
             // Here is the code which sends the data over the network.
             // No user interaction shall exist in the model.
-            MessageBox.Show(message);
+           
         }
         public void connect(String ip, Int32 port)
         {
-            port = 21;
-            ip = "127.0.0.1";
             try
             {
                 client = new TcpClient(ip, port);
+                stream = client.GetStream();
                 var handshake = new Message
                 {
                     jsrequesttype = "HandShake",
@@ -88,6 +89,10 @@ namespace P2P_Chat.Models
 
                 };
                 senddata(handshake);
+                Thread thread = new Thread(new ThreadStart(read_data));
+                thread.Name = "en annan tråd";
+                thread.Start();
+
             }
             catch (SocketException e)
             {
@@ -96,40 +101,62 @@ namespace P2P_Chat.Models
             }
            
         }
-        public void startListening(Int32 port)
+
+
+        public void read_data()
         {
-            try
+            while (stream != null)
             {
-                port = 21;
-                string ip = "127.0.0.1";
-                MessageBox.Show("starting to listen");
-                IPAddress localAddr = IPAddress.Parse(ip);
-                server = new TcpListener(localAddr, port);
-                server.Start();
-                Thread thread = new Thread(new ThreadStart(listeningloop));
-                thread.Name = "en annan tråd";
-                thread.Start();
-            }
-            catch (SocketException e)
-            {
-                MessageBox.Show("Cannot listen to Port " + port);
+                try
+                {
+                    Byte[] data = new Byte[256];
+
+                    // String to store the response ASCII representation.
+                    String responseData = String.Empty;
+                    // Read the first batch of the TcpServer response bytes.
+                    Int32 bytes = stream.Read(data, 0, data.Length);
+                    responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+                    string a = responseData;
+                    if (a.IndexOf("Closing_connection") != -1)
+                    {
+                        break;
+                    }
+                    Message? msg = JsonSerializer.Deserialize<Message>(a);
+
+                    if (msg.jsrequesttype == "BasicChat")
+                    {
+                        Messages = msg;
+                    }
+                    
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine("IOException: {0}", e);
+                }
+                catch (ArgumentNullException e)
+                {
+                    Console.WriteLine("ArgumentNullException: {0}", e);
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine("SocketException: {0}", e);
+                }
 
             }
-
         }
-
-        public void prepare_to_send(String message)
+            public void prepare_to_send(String name, String message)
         {
-            var Message = new Message
+            var msg = new Message
             {
                 jsrequesttype = "BasicChat",
 
-                jsname = "Rayan",
+                jsname = name,
 
                 jsmsg = message
 
+
             };
-            senddata(Message);
+            senddata(msg);
         }
         public void senddata(Message message)
         {
@@ -148,7 +175,7 @@ namespace P2P_Chat.Models
                 Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
 
                     // Get a client stream for reading and writing.
-                    NetworkStream stream = client.GetStream();
+                    
 
                     // Send the message to the connected TcpServer.
                     stream.Write(data, 0, data.Length);
@@ -163,47 +190,130 @@ namespace P2P_Chat.Models
                 }
             
         }
-            private void listeningloop()
+
+
+
+
+
+
+
+
+
+
+        public void startListening(Int32 port)
         {
-            MessageBox.Show(Thread.CurrentThread.Name);
+            try
+            {
+
+                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+                server = new TcpListener(localAddr, port);
+                server.Start();
+                Thread thread = new Thread(new ThreadStart(listeningloop));
+                thread.Name = "en annan tråd";
+                thread.Start();
+            }
+            catch (SocketException e)
+            {
+                MessageBox.Show("Cannot listen to Port " + port);
+
+            }
+
+        }
+
+        private void listeningloop()
+        {
+            //MessageBox.Show(Thread.CurrentThread.Name);
             while (true)
             {
-                Byte[] bytes = new Byte[8096];
-                String data = null;
-
-                client = server.AcceptTcpClient();
-                //if (client != null)
-                //{
-                    connectionisAccepted = true;
-                    MessageBox.Show("client connected");
-                    Call_Incoming = true;
-                   // client.Close();
-                   // continue;
-                //}
-                //if (client == null)
-                //{
-                //    client.Close();
-                //}
-                NetworkStream stream = client.GetStream();
-                int i;
-
-                // Loop to receive all the data sent by the client.
-                while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                if (!Call_Incoming)
                 {
-                    // Translate data bytes to a ASCII string.
-                    data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+                    Byte[] bytes = new Byte[8096];
+                    String data = null;
 
-                    string jsondata = data;
+                    client = server.AcceptTcpClient();
 
-                    Message? msg = JsonSerializer.Deserialize<Message>(jsondata);
-
-                    MessageBox.Show(msg.jsmsg, msg.jsrequesttype);
-                   // Console.WriteLine("Sent: {0}", data);
+                    Call_Incoming = true;
+                    stream = client.GetStream();
                 }
+
+                
+                if (connectionisAccepted)
+                {
+                    read_data();
+                }
+                
+
+                
+
             }
 
 
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public void accept_connection()
+        {
+            connectionisAccepted = true;
+            Call_Incoming = false;
+        }
+        public void decline_connection()
+        {
+            connectionisAccepted = false;
+            Call_Incoming = false;
+            client.Close();
+        }
+        public void close_connection()
+        {
+            connectionisAccepted = false;
+            Call_Incoming = false;
+            var close_connection = new Message
+            {
+                jsrequesttype = "Closing_connection",
+
+                jsname = "System",
+
+                jsmsg = ""
+
+
+            };
+            senddata(close_connection);
+            client.Close();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         void OnPropertyChanged(string property)
         {
             if (PropertyChanged != null)
