@@ -36,6 +36,8 @@ namespace P2P_Chat.Models
         private bool call_incoming;
         private string? _status = "Disconnected";
         private Message? _messages;
+        private Int32 port;
+        private String ip;
         TcpClient? client;
         TcpListener? server;
         NetworkStream? stream;
@@ -89,6 +91,16 @@ namespace P2P_Chat.Models
         }
         public void connect(String ip, Int32 port)
         {
+            this.ip = ip;
+            this.port = port;
+            Thread thread = new Thread(new ThreadStart(tryconnecting));
+            thread.Name = "en annan tråd";
+            thread.Start();
+
+        }
+
+        private void tryconnecting()
+        {
             try
             {
                 client = new TcpClient(ip, port);
@@ -113,12 +125,9 @@ namespace P2P_Chat.Models
             catch (SocketException e)
             {
                 MessageBox.Show("No one is listening on IP " + ip + " and Port " + port);
-               
+
             }
-           
         }
-
-
         public void read_data()
         {
             while (true)
@@ -171,14 +180,14 @@ namespace P2P_Chat.Models
                 {
                     Console.WriteLine("SocketException: {0}", e);
                 }
-                //catch(ObjectDisposedException e)
-                //{
-                //    Console.WriteLine("ObjectDisposedException: {0}", e);
-                //}
-                //catch(System.Text.Json.JsonException e)
-                //{
-                //    Console.WriteLine("ObjectDisposedException: {0}", e);
-                //}
+                catch (ObjectDisposedException e)
+                {
+                    Console.WriteLine("ObjectDisposedException: {0}", e);
+                }
+                catch (System.Text.Json.JsonException e)
+                {
+                    Console.WriteLine("ObjectDisposedException: {0}", e);
+                }
 
             }
         }
@@ -246,12 +255,13 @@ namespace P2P_Chat.Models
             try
             {
 
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+                IPAddress localAddr = IPAddress.Parse("192.168.1.240");
                 server = new TcpListener(localAddr, port);
                 server.Start();
                 Thread thread = new Thread(new ThreadStart(listeningloop));
                 thread.Name = "en annan tråd";
                 thread.Start();
+                Status = "Listening";
             }
             catch (SocketException e)
             {
