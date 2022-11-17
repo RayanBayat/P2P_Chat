@@ -9,10 +9,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Text.Json;
 using System.ComponentModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using static P2P_Chat.Models.ConnectionHandler;
 using System.Windows.Interop;
 using System.IO;
 using static System.Net.Mime.MediaTypeNames;
+
 
 namespace P2P_Chat.Models
 {
@@ -33,8 +36,8 @@ namespace P2P_Chat.Models
     {
 
         bool connectionisAccepted, callincoming;
-        private bool call_incoming;
-        private string? _status = "Disconnected";
+        private bool call_incoming, islistening;
+        private string? _status = "Disconnected", myname,othername;
         private Message? _messages;
         private Int32 port;
         private String ip;
@@ -42,6 +45,7 @@ namespace P2P_Chat.Models
         TcpListener? server;
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
+        Thread thread;
 
 
         public string Status
@@ -89,8 +93,9 @@ namespace P2P_Chat.Models
             // No user interaction shall exist in the model.
            
         }
-        public void connect(String ip, Int32 port)
+        public void connect(String ip, Int32 port,string myname)
         {
+            this.myname = myname;
             this.ip = ip;
             this.port = port;
             Thread thread = new Thread(new ThreadStart(tryconnecting));
@@ -109,7 +114,7 @@ namespace P2P_Chat.Models
                 {
                     jsrequesttype = "HandShake",
 
-                    jsname = "",
+                    jsname = myname,
 
                     jsmsg = ""
 
@@ -147,7 +152,7 @@ namespace P2P_Chat.Models
                     Int32 bytes = stream.Read(data, 0, data.Length);
                     responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
                     string a = responseData;
-                    Message? msg = JsonSerializer.Deserialize<Message>(a);
+                    Message? msg = System.Text.Json.JsonSerializer.Deserialize<Message>(a);
 
                     if (msg.jsrequesttype == "BasicChat")
                     {
@@ -155,6 +160,7 @@ namespace P2P_Chat.Models
                     }
                     else if (msg.jsrequesttype == "HandShake")
                     {
+                        othername = msg.jsname;
                         Status = "Connected";
                     }
                     else if (msg.jsrequesttype == "Rejected")
@@ -191,44 +197,38 @@ namespace P2P_Chat.Models
 
             }
         }
-            public void prepare_to_send(String name, String message)
+            public void prepare_to_send(String message)
         {
+           
             var msg = new Message
             {
                 jsrequesttype = "BasicChat",
 
-                jsname = name,
+                jsname = myname,
 
                 jsmsg = message
 
 
             };
-            senddata(msg);
+            Messages = msg;
+            senddata(Messages);
         }
         public void senddata(Message message)
         {
-
+            JObject conversations;
                 try
                 {
                 if (Status != "Disconnected")
                 {
-                    string json_data = JsonSerializer.Serialize(message);
-
-
-
-                    // Console.WriteLine(tcpc);
-                    // Translate the passed message into ASCII and store it as a Byte array.
+                    
+                  //  File.Create(@"details.json");
+                    string json_data = System.Text.Json.JsonSerializer.Serialize(message);
                     Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
-
-                    // Get a client stream for reading and writing.
-
-
-                    // Send the message to the connected TcpServer.
                     stream.Write(data, 0, data.Length);
+                 
+
+
                 }
-
-
-
                 }
                 catch (ArgumentNullException e)
                 {
@@ -250,16 +250,18 @@ namespace P2P_Chat.Models
 
 
 
-        public void startListening(Int32 port)
+        public void startListening(Int32 port,String myname)
         {
+            this.myname = myname;
             try
             {
 
-                IPAddress localAddr = IPAddress.Parse("192.168.1.240");
+                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
                 server = new TcpListener(localAddr, port);
                 server.Start();
-                Thread thread = new Thread(new ThreadStart(listeningloop));
+                thread = new Thread(new ThreadStart(listeningloop));
                 thread.Name = "en annan tråd";
+                islistening = true;
                 thread.Start();
                 Status = "Listening";
             }
@@ -270,7 +272,6 @@ namespace P2P_Chat.Models
             }
 
         }
-
         private void listeningloop()
         {
             //MessageBox.Show(Thread.CurrentThread.Name);
@@ -278,19 +279,33 @@ namespace P2P_Chat.Models
             {
                 if (!Call_Incoming)
                 {
-                    Byte[] bytes = new Byte[8096];
-                    String data = null;
+                    try
+                    {
+                        if(!islistening)
+                        {
+                            break;
+                        }
+                        Byte[] bytes = new Byte[8096];
+                        String data = null;
 
-                    client = server.AcceptTcpClient();
+                        client = server.AcceptTcpClient();
 
-                    Call_Incoming = true;
-                    stream = client.GetStream();
-                    Status = "Getting a call";
+                        Call_Incoming = true;
+                        stream = client.GetStream();
+                        Status = "Getting a call";
+                    }
+                    catch (SocketException e)
+                    {
+                        MessageBox.Show("Cannot listen to Port " + port);
+
+                    }
+
                 }
 
                 
                 if (connectionisAccepted)
                 {
+
                     read_data();
                 }
                 
@@ -328,7 +343,7 @@ namespace P2P_Chat.Models
             {
                 jsrequesttype = "HandShake",
 
-                jsname = "",
+                jsname = myname,
 
                 jsmsg = ""
 
@@ -342,7 +357,7 @@ namespace P2P_Chat.Models
             Call_Incoming = false;
             var handshake = new Message
             {
-                jsrequesttype = "Reject",
+                jsrequesttype = "Rejected",
 
                 jsname = "",
 
@@ -371,6 +386,7 @@ namespace P2P_Chat.Models
             senddata(close_connection);
             client.Close();
             Status = "Disconnected";
+            islistening = false;
         }
 
 

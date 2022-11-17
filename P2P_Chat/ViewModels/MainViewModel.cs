@@ -186,8 +186,7 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            Connection.prepare_to_send(Name,MessageToSend);
-            print_on_screen(Name, MessageToSend);
+            Connection.prepare_to_send(MessageToSend);
             MessageToSend = "";
 
 
@@ -202,11 +201,11 @@ namespace P2P_Chat.ViewModels
         }
         public void establishConnection()
         {
-            Connection.connect(ToIP, Port);
+            Connection.connect(ToIP, Port,Name);
         }
         public void startListening()
         {
-            Connection.startListening(Port);
+            Connection.startListening(Port,Name);
         }
 
         void OnPropertyChanged(string property)
@@ -225,6 +224,11 @@ namespace P2P_Chat.ViewModels
             _connection.decline_connection();
         }
         public void Disconnect()
+        {
+            _connection.close_connection();
+        }
+
+        public void OnWindowClosing(object sender, CancelEventArgs e)
         {
             _connection.close_connection();
         }

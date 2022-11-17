@@ -39,12 +39,14 @@
         <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,0,53"/>
         <TextBox Text="{Binding Path=Port}" Margin="0,27,0,27"/>
         <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,53,139,1" >Connect</Button>
-        <Button Command="{Binding ListenCommand}" Margin="56,53,83,1" >Host</Button>
+        <Button Command="{Binding ListenCommand}" Margin="56,53,83,1" >Listen</Button>
         <Button Command="{Binding DisconnectCommand}" Margin="112,53,17,1" >Disconnect</Button>
         <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,157,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 
+        <!--closing window-->
 
+        
         <!--name-->
         <Popup IsOpen="{Binding Path=PopUpActive}" Width="150" Height="100"
                PlacementTarget="{Binding ElementName=connect}"

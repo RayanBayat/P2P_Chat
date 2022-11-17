@@ -24,6 +24,7 @@ namespace P2P_Chat.Views
         {
             InitializeComponent();
             this.DataContext = mainViewModel;
+            Closing += mainViewModel.OnWindowClosing;
         }
     }
 }
