@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:P2P_Chat.Views"
         xmlns:vm ="clr-namespace:P2P_Chat.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="500" Width="800">
 
     <Grid Height="400" Margin="10">
         <Grid.ColumnDefinitions>
@@ -27,19 +27,21 @@
             <vm:MainViewModel x:Key="vmc"/>
         </Grid.Resources>-->
 
-        <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=MessageToSend}" Margin="0,0,0,27" Grid.ColumnSpan="2"/>
+        <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=MessageToSend, Mode=TwoWay}" Margin="0,0,0,27" Grid.ColumnSpan="2"/>
         <Button Grid.Row="4" Grid.Column="0" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" Grid.ColumnSpan="2" >Send Message!</Button>
 
 
-        <TextBox Grid.Column="1" Grid.Row="0" x:Name="name" Text="{Binding Path=Name}" Margin="42,0,43,53"/>
-        <Label Grid.Row="0" Grid.Column="1" Content="Name" Margin="152,0,0,53"/>
+        <TextBox Grid.Column="1" Grid.Row="0" x:Name="name" Text="{Binding Path=Name}" Margin="60,0,48,53"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="Name" Margin="147,0,5,53"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="Status:" Margin="0,53,147,0"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="{Binding Path=Status}" Margin="48,53,38,0"/>
         <!--port and ip-->
         <TextBox x:Name="textBox" Text="{Binding Path=ToIP}" Margin="0,0,0,53"/>
         <TextBox Text="{Binding Path=port}" Margin="0,27,0,27"/>
         <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,53,139,1" >Connect</Button>
         <Button Command="{Binding ListenCommand}" Margin="56,53,83,1" >Host</Button>
         <Button Command="{Binding DisconnectCommand}" Margin="112,53,17,1" >Disconnect</Button>
-        <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,165,53"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="IP" Margin="0,0,157,53"/>
         <Label Grid.Row="0" Grid.Column="1" Content="Port" Margin="0,27,0,27" HorizontalAlignment="Left" Width="60"/>
 
 
@@ -56,13 +58,13 @@
         </Popup>
         <!--messages-->
         <!--TODO använd Panel-->
-        <StackPanel Grid.Column="0" Grid.Row="1" CanVerticallyScroll="True" Margin="0,5,10,10" Grid.RowSpan="3" Grid.ColumnSpan="2">
-            <ListView  ItemsSource="{Binding Path=Messageslist}" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="3"
+        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Margin="0,5,10,10" Grid.RowSpan="3" Grid.ColumnSpan="2">
+            <ListView Height="220px"  ItemsSource="{Binding Path=Messageslist}"
                                          ScrollViewer.VerticalScrollBarVisibility="Visible"
-                  ScrollViewer.CanContentScroll="True">
+                  ScrollViewer.CanContentScroll="False">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=_names}" />
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=_names}" Width="100" />
                         <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Path=_messages}" Width="300"/>
                     </GridView>
                 </ListView.View>

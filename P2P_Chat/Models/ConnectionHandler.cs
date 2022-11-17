@@ -12,6 +12,7 @@ using System.ComponentModel;
 using static P2P_Chat.Models.ConnectionHandler;
 using System.Windows.Interop;
 using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace P2P_Chat.Models
 {
@@ -21,10 +22,10 @@ namespace P2P_Chat.Models
     public class Message
     {
 
-        public string jsrequesttype { get; set; }
+        public string? jsrequesttype { get; set; }
 
-        public string jsname { get; set; }
-        public string jsmsg { get; set; }
+        public string? jsname { get; set; }
+        public string? jsmsg { get; set; }
 
 
     }
@@ -33,12 +34,26 @@ namespace P2P_Chat.Models
 
         bool connectionisAccepted, callincoming;
         private bool call_incoming;
-        private Message _messages;
+        private string? _status = "Disconnected";
+        private Message? _messages;
         TcpClient? client;
         TcpListener? server;
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
 
+
+        public string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value;
+                OnPropertyChanged("Status");
+            }
+        }
         public Message Messages
         {
             get
@@ -82,7 +97,7 @@ namespace P2P_Chat.Models
                 {
                     jsrequesttype = "HandShake",
 
-                    jsname = "Rayan",
+                    jsname = "",
 
                     jsmsg = ""
 
@@ -92,6 +107,7 @@ namespace P2P_Chat.Models
                 Thread thread = new Thread(new ThreadStart(read_data));
                 thread.Name = "en annan tråd";
                 thread.Start();
+                Status = "Trying to connect";
 
             }
             catch (SocketException e)
@@ -105,7 +121,7 @@ namespace P2P_Chat.Models
 
         public void read_data()
         {
-            while (stream != null)
+            while (true)
             {
                 try
                 {
@@ -114,18 +130,32 @@ namespace P2P_Chat.Models
                     // String to store the response ASCII representation.
                     String responseData = String.Empty;
                     // Read the first batch of the TcpServer response bytes.
+                    if (!client.Connected)
+                    {
+                        Status = "Disconnected";
+                        break;
+                    }
                     Int32 bytes = stream.Read(data, 0, data.Length);
                     responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
                     string a = responseData;
-                    if (a.IndexOf("Closing_connection") != -1)
-                    {
-                        break;
-                    }
                     Message? msg = JsonSerializer.Deserialize<Message>(a);
 
                     if (msg.jsrequesttype == "BasicChat")
                     {
                         Messages = msg;
+                    }
+                    else if (msg.jsrequesttype == "HandShake")
+                    {
+                        Status = "Connected";
+                    }
+                    else if (msg.jsrequesttype == "Rejected")
+                    {
+                        Status = "Disconnected";
+                    }
+                    else if(msg.jsrequesttype == "Closing_connection")
+                    {
+                        Status = "Disconnected";
+                        break;
                     }
                     
                 }
@@ -141,6 +171,14 @@ namespace P2P_Chat.Models
                 {
                     Console.WriteLine("SocketException: {0}", e);
                 }
+                //catch(ObjectDisposedException e)
+                //{
+                //    Console.WriteLine("ObjectDisposedException: {0}", e);
+                //}
+                //catch(System.Text.Json.JsonException e)
+                //{
+                //    Console.WriteLine("ObjectDisposedException: {0}", e);
+                //}
 
             }
         }
@@ -163,22 +201,25 @@ namespace P2P_Chat.Models
 
                 try
                 {
+                if (Status != "Disconnected")
+                {
+                    string json_data = JsonSerializer.Serialize(message);
 
 
 
-                string json_data = JsonSerializer.Serialize(message);
-
-                
-
-                // Console.WriteLine(tcpc);
-                // Translate the passed message into ASCII and store it as a Byte array.
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
+                    // Console.WriteLine(tcpc);
+                    // Translate the passed message into ASCII and store it as a Byte array.
+                    Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
 
                     // Get a client stream for reading and writing.
-                    
+
 
                     // Send the message to the connected TcpServer.
                     stream.Write(data, 0, data.Length);
+                }
+
+
+
                 }
                 catch (ArgumentNullException e)
                 {
@@ -234,6 +275,7 @@ namespace P2P_Chat.Models
 
                     Call_Incoming = true;
                     stream = client.GetStream();
+                    Status = "Getting a call";
                 }
 
                 
@@ -271,12 +313,36 @@ namespace P2P_Chat.Models
         {
             connectionisAccepted = true;
             Call_Incoming = false;
+            Status = "Connected";
+            var handshake = new Message
+            {
+                jsrequesttype = "HandShake",
+
+                jsname = "",
+
+                jsmsg = ""
+
+
+            };
+            senddata(handshake);
         }
         public void decline_connection()
         {
             connectionisAccepted = false;
             Call_Incoming = false;
+            var handshake = new Message
+            {
+                jsrequesttype = "Reject",
+
+                jsname = "",
+
+                jsmsg = ""
+
+
+            };
+            senddata(handshake);
             client.Close();
+            Status = "Disconnected";
         }
         public void close_connection()
         {
@@ -288,12 +354,13 @@ namespace P2P_Chat.Models
 
                 jsname = "System",
 
-                jsmsg = ""
+                jsmsg = "test1"
 
 
             };
             senddata(close_connection);
             client.Close();
+            Status = "Disconnected";
         }
 
 

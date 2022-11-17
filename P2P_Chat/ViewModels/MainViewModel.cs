@@ -22,8 +22,8 @@ namespace P2P_Chat.ViewModels
 
 
         private bool _popupActive;
-        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend;
-        private Int32 _port = 21;
+        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected";
+        private Int32 _port = 22;
 
 
         private ConnectionHandler _connection;
@@ -42,7 +42,18 @@ namespace P2P_Chat.ViewModels
             public string? _messages { get; set; }
             public string? _names{ get; set; }
         }
-
+        public String Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value;
+                OnPropertyChanged("Status");
+            }
+        }
         public ConnectionHandler Connection
         {
             get
@@ -88,6 +99,7 @@ namespace P2P_Chat.ViewModels
             set
             {
                 _messageToSend = value;
+                OnPropertyChanged("MessageToSend");
             }
 
         }
@@ -153,11 +165,15 @@ namespace P2P_Chat.ViewModels
         {
             if (e.PropertyName == "Call_Incoming")
             {
-                PopUpActive = _connection.Call_Incoming;
+                PopUpActive = Connection.Call_Incoming;
             }
             else if(e.PropertyName == "Messages")
             {
-                print_on_screen(_connection.Messages.jsname, _connection.Messages.jsmsg);
+                print_on_screen(Connection.Messages.jsname, Connection.Messages.jsmsg);
+            }
+            else if(e.PropertyName == "Status")
+            {
+                Status = Connection.Status;
             }
            // MessageBox.Show(e. + e.PropertyName + " has changed");
           //  throw new NotImplementedException();
@@ -172,6 +188,9 @@ namespace P2P_Chat.ViewModels
         {
             Connection.prepare_to_send(Name,MessageToSend);
             print_on_screen(Name, MessageToSend);
+            MessageToSend = "";
+
+
         }
 
         public void print_on_screen(String name,String msg)
