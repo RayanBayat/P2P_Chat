@@ -45,9 +45,22 @@ namespace P2P_Chat.Models
         TcpListener? server;
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
+        private Message messageforstore;
         Thread thread;
 
 
+        public Message MessageForStore
+        {
+            get
+            {
+                return messageforstore;
+            }
+            set
+            {
+                messageforstore = value;
+                OnPropertyChanged("MessageForStore");
+            }
+        }
         public string Status
         {
             get
@@ -184,7 +197,9 @@ namespace P2P_Chat.Models
                         }
                         break;
                     }
-                    
+                    MessageForStore = msg;
+
+
                 }
                 catch (IOException e)
                 {

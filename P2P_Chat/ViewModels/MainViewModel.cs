@@ -19,7 +19,7 @@ namespace P2P_Chat.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-
+        private Message _messagetostore;
 
         private bool _popupActive;
         private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected";
@@ -37,6 +37,17 @@ namespace P2P_Chat.ViewModels
         public ICommand DeclineConnectionCommand { get; set; }
         public ICommand DisconnectCommand { get; set; }
 
+        public Message Messagetostore
+        {
+            get
+            {
+                return _messagetostore;
+            }
+            set
+            {
+                _messagetostore = value;
+            }
+        }
         public struct Messagelist
         {
             public string? _messages { get; set; }
