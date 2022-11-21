@@ -147,6 +147,10 @@ namespace P2P_Chat.Models
                     if (!client.Connected)
                     {
                         Status = "Disconnected";
+                        if (islistening)
+                        {
+                            Status = "Listening";
+                        }
                         break;
                     }
                     Int32 bytes = stream.Read(data, 0, data.Length);
@@ -166,10 +170,18 @@ namespace P2P_Chat.Models
                     else if (msg.jsrequesttype == "Rejected")
                     {
                         Status = "Disconnected";
+                        if (islistening)
+                        {
+                            Status = "Listening";
+                        }
                     }
                     else if(msg.jsrequesttype == "Closing_connection")
                     {
                         Status = "Disconnected";
+                        if (islistening)
+                        {
+                            Status = "Listening";
+                        }
                         break;
                     }
                     
@@ -368,6 +380,10 @@ namespace P2P_Chat.Models
             senddata(handshake);
             client.Close();
             Status = "Disconnected";
+            if (islistening)
+            {
+                Status = "Listening";
+            }
         }
         public void close_connection()
         {
@@ -386,7 +402,11 @@ namespace P2P_Chat.Models
             senddata(close_connection);
             client.Close();
             Status = "Disconnected";
-            islistening = false;
+            if (islistening)
+            {
+                Status = "Listening";
+            }
+            //islistening = false;
         }
 
 
