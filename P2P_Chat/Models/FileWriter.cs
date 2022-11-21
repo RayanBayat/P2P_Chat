@@ -9,58 +9,60 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Windows;
 
 namespace P2P_Chat.Models
 {
     public class FileWriter
     {
-        //        private JObject conversations;
-        //        public FileWriter()
-        //        {
-        //            //Skapar folder
-        //            Directory.CreateDirectory(@"c:\TDDD49STORAGE");
+                private JObject conversations;
+                public FileWriter()
+        {
+            //Skapar folder
+            Directory.CreateDirectory(@"D:\TDDD49STORAGE");
 
-        //            //Skapar fil
-        //            if (!File.Exists(@"c:\TDDD49STORAGE\conversations.json"))
-        //            {
-        //                File.WriteAllText(@"c:\TDDD49STORAGE\conversations.json", String.Empty);
-        //            }
+            //Skapar fil
+            if (!File.Exists(@"D:\TDDD49STORAGE\conversations.json"))
+            {
+                File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", String.Empty);
+            }
 
-        //            if (File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json") == String.Empty)
-        //            {
-        //                //Debug.WriteLine("created conversations object");
-        //                conversations = new JObject(
-        //                    new JProperty("conversations", new JArray()));
-        //            }
-        //            else
-        //            {
-        //                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json"));
-        //                //Debug.WriteLine(conversations.ToString());
-        //            }
-        //        }
+            if (File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json") == String.Empty)
+            {
+                //Debug.WriteLine("created conversations object");
+                conversations = new JObject(
+                    new JProperty("conversations", new JArray()));
+            }
+            else
+            {
+                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json"));
+                //Debug.WriteLine(conversations.ToString());
+            }
+        }
 
-        //        public void WriteToFile(JObject jsonObj)
-        //        {
+        public void WriteToFile(JObject jsonObj)
+        {
+            conversations = jsonObj;
+            JArray arrayOfConvos = (JArray)conversations["conversations"];
+            JObject conversation = (JObject)arrayOfConvos.Last;
+            JArray aConvo = (JArray)conversation["convo"];
+            aConvo.Add(jsonObj);
+            //string a = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Formatting.Indented);
+            //MessageBox.Show(a);
+            //Debug.WriteLine(conversations.ToString());
 
-        //            JArray arrayOfConvos = (JArray)conversations["conversations"];
-        //            JObject conversation = (JObject)arrayOfConvos.Last;
-        //            JArray aConvo = (JArray)conversation["convo"];
-        //            aConvo.Add(jsonObj);
+            File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", aConvo.ToString());
 
-        //            //Debug.WriteLine(conversations.ToString());
+        }
 
-        //            File.WriteAllText(@"c:\TDDD49STORAGE\conversations.json", conversations.ToString());
-
-        //        }
-
-        //        public void InitConversation(String name)
-        //        {
-        //            //Debug.WriteLine("Initialised conversations with name " + name);
-        //            JArray arrayOfConvos = (JArray)conversations["conversations"];
-        //            arrayOfConvos.Add(new JObject(
-        //            new JProperty("name", name),
-        //                new JProperty("convo", new JArray())));
-        //        }
+        public void InitConversation(String name)
+        {
+            //Debug.WriteLine("Initialised conversations with name " + name);
+            JArray arrayOfConvos = (JArray)conversations["conversations"];
+            arrayOfConvos.Add(new JObject(
+            new JProperty("name", name),
+                new JProperty("convo", new JArray())));
+        }
 
         //        public List<Conversation> GetHistory()
         //        {

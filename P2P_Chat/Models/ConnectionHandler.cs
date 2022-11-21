@@ -15,6 +15,7 @@ using static P2P_Chat.Models.ConnectionHandler;
 using System.Windows.Interop;
 using System.IO;
 using static System.Net.Mime.MediaTypeNames;
+using System.Timers;
 
 
 namespace P2P_Chat.Models
@@ -30,6 +31,13 @@ namespace P2P_Chat.Models
         public string? jsname { get; set; }
         public string? jsmsg { get; set; }
 
+        public JObject msgToJson()
+        {
+            return new JObject(
+                    new JProperty("name", jsname),
+                    new JProperty("msg", jsmsg)
+                    );
+        }
 
     }
     public class ConnectionHandler : INotifyPropertyChanged
@@ -48,7 +56,18 @@ namespace P2P_Chat.Models
         private Message messageforstore;
         Thread thread;
 
+        public String Othername
+        {
+            get
+            {
+                return othername;
+            }
+            set
+            {
+                othername = value;
 
+            }
+        }
         public Message MessageForStore
         {
             get
@@ -174,11 +193,13 @@ namespace P2P_Chat.Models
                     if (msg.jsrequesttype == "BasicChat")
                     {
                         Messages = msg;
+                        MessageForStore = msg;
                     }
                     else if (msg.jsrequesttype == "HandShake")
                     {
-                        othername = msg.jsname;
+                        Othername = msg.jsname;
                         Status = "Connected";
+
                     }
                     else if (msg.jsrequesttype == "Rejected")
                     {
@@ -197,7 +218,7 @@ namespace P2P_Chat.Models
                         }
                         break;
                     }
-                    MessageForStore = msg;
+                    
 
 
                 }

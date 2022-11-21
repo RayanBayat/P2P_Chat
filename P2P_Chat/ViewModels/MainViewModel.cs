@@ -28,7 +28,12 @@ namespace P2P_Chat.ViewModels
 
         private ConnectionHandler _connection;
         private ObservableCollection<Messagelist> _messageslist;
-
+        private FileWriter fileWriter;
+        private FileWriter FileWriter
+        {
+            get { return fileWriter; }
+            set { fileWriter = value; }
+        }
         //commands
         public ICommand MessageCommand { get; set; }
         public ICommand ToIPCommand { get; set; }
@@ -169,6 +174,7 @@ namespace P2P_Chat.ViewModels
             this.AcceptConnectionCommand = new AcceptConnectionCommand(this);
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
+            this.FileWriter = new FileWriter();
             _messageslist = new ObservableCollection<Messagelist>();
         }
 
@@ -184,7 +190,16 @@ namespace P2P_Chat.ViewModels
             }
             else if(e.PropertyName == "Status")
             {
+                if (Connection.Status =="Connected")
+                {
+                    fileWriter.InitConversation(Connection.Othername);
+                }
                 Status = Connection.Status;
+            }
+            else if (e.PropertyName == "MessageForStore")
+            {
+                Messagetostore = Connection.MessageForStore;
+                Saveit(Messagetostore);
             }
            // MessageBox.Show(e. + e.PropertyName + " has changed");
           //  throw new NotImplementedException();
@@ -244,6 +259,10 @@ namespace P2P_Chat.ViewModels
             _connection.close_connection();
         }
 
+        public void Saveit(Message msg)
+        {
+            FileWriter.WriteToFile(msg.msgToJson());
+        }
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         //{
         //    //if (propertyName == "Search")
