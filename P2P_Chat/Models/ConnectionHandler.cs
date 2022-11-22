@@ -273,7 +273,12 @@ namespace P2P_Chat.Models
                     string json_data = System.Text.Json.JsonSerializer.Serialize(message);
                     Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
                     stream.Write(data, 0, data.Length);
-                 
+
+                    if (message.jsrequesttype == "BasicChat")
+                    {
+                        MessageForStore = message;
+                    }
+                    
 
 
                 }
