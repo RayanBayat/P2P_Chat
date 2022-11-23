@@ -13,15 +13,13 @@ using System.Windows;
 
 namespace P2P_Chat.Models
 {
-    public class convos
-    {
-        private JArray oneConvo = new JArray();
-    }
+
     public class FileWriter
     {
                 private JObject conversations;
+        private JArray oneConvo = new JArray();
         private JArray allConvos = new JArray();
-                public FileWriter()
+        public FileWriter()
         {
             //Skapar folder
             Directory.CreateDirectory(@"D:\TDDD49STORAGE");
@@ -47,8 +45,9 @@ namespace P2P_Chat.Models
 
         public void WriteToFile(JObject jsonObj)
         {
-            allConvos.Add(jsonObj);
+            oneConvo.Add(jsonObj);
             conversations = jsonObj;
+            allConvos.Add(oneConvo);
             //JArray arrayOfConvos = (JArray)conversations["conversations"];
             //JObject conversation = (JObject)arrayOfConvos.Last;
             //JArray aConvo = (JArray)conversation["convo"];
