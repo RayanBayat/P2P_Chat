@@ -44,7 +44,7 @@ namespace P2P_Chat.Models
     {
 
         bool connectionisAccepted, callincoming;
-        private bool call_incoming, islistening;
+        private bool call_incoming, islistening,conencted = false;
         private string? _status = "Disconnected", myname,othername;
         private Message? _messages;
         private Int32 port;
@@ -155,8 +155,11 @@ namespace P2P_Chat.Models
                 };
                 senddata(handshake);
                 Thread thread = new Thread(new ThreadStart(read_data));
+                Thread thread1 = new Thread(new ThreadStart(last_handshake));
                 thread.Name = "en annan tråd";
                 thread.Start();
+                thread1.Name = "last shake";
+                thread1.Start();
                 Status = "Trying to connect";
 
             }
@@ -201,6 +204,7 @@ namespace P2P_Chat.Models
                         
                         Othername = msg.jsname;
                         Status = "Connected";
+                        conencted = true;
 
                     }
                     else if (msg.jsrequesttype == "Rejected")
@@ -262,6 +266,25 @@ namespace P2P_Chat.Models
             };
             Messages = msg;
             senddata(Messages);
+        }
+
+        private void last_handshake()
+        {
+            while(!conencted)
+            {
+
+            }
+            var handshake = new Message
+            {
+                jsrequesttype = "HandShake",
+
+                jsname = myname,
+
+                jsmsg = ""
+
+
+            };
+            senddata(handshake);
         }
         public void senddata(Message message)
         {
@@ -405,7 +428,7 @@ namespace P2P_Chat.Models
 
 
             };
-            Status = "Connected";
+            
             senddata(handshake);
         }
         public void decline_connection()

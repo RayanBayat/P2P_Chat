@@ -38,10 +38,9 @@ namespace P2P_Chat.Models
             }
             else
             {
-                //conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json"));
+                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json"));
                 //Debug.WriteLine(conversations.ToString());
-                conversations = new JObject(
-     new JProperty("conversations", new JArray()));
+    
             }
         }
 
