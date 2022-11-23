@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -186,13 +187,16 @@ namespace P2P_Chat.ViewModels
             }
             else if(e.PropertyName == "Messages")
             {
+
                 print_on_screen(Connection.Messages.jsname, Connection.Messages.jsmsg);
             }
             else if(e.PropertyName == "Status")
             {
                 if (Connection.Status =="Connected")
                 {
+               
                     fileWriter.InitConversation(Connection.Othername);
+
                 }
                 Status = Connection.Status;
             }

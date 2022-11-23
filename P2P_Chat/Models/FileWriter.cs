@@ -17,8 +17,8 @@ namespace P2P_Chat.Models
     public class FileWriter
     {
                 private JObject conversations;
-        private JArray oneConvo = new JArray();
-        private JArray allConvos = new JArray();
+        //private JArray oneConvo = new JArray();
+        //private JArray allConvos = new JArray();
         public FileWriter()
         {
             //Skapar folder
@@ -38,58 +38,62 @@ namespace P2P_Chat.Models
             }
             else
             {
-                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json"));
+                //conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json"));
                 //Debug.WriteLine(conversations.ToString());
+                conversations = new JObject(
+     new JProperty("conversations", new JArray()));
             }
         }
 
         public void WriteToFile(JObject jsonObj)
         {
-            oneConvo.Add(jsonObj);
-            conversations = jsonObj;
-            allConvos.Add(oneConvo);
-            //JArray arrayOfConvos = (JArray)conversations["conversations"];
-            //JObject conversation = (JObject)arrayOfConvos.Last;
-            //JArray aConvo = (JArray)conversation["convo"];
-            //aConvo.Add(jsonObj);
-            //string a = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Formatting.Indented);
-            //MessageBox.Show(a);
-            //Debug.WriteLine(conversations.ToString());
+            //oneConvo.Add(jsonObj);
+            //String[] parts = jsonObj.ToString().Split(' ');
+            //String otherguysname = parts[3].Substring(1, parts[3].LastIndexOf('"') - 1);
+            //conversations = new JObject();
+            //conversations[otherguysname] = oneConvo;
+            //allConvos.Add(conversations);
 
-            File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", allConvos.ToString());
+            JArray arrayOfConvos = (JArray)conversations["conversations"];
+            JObject conversation = (JObject)arrayOfConvos.Last;
+            JArray aConvo = (JArray)conversation["convo"];
+            aConvo.Add(jsonObj);
 
+            // MessageBox.Show(allConvos.ToString());
+
+            File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", conversations.ToString());
         }
 
         public void InitConversation(String name)
         {
             //Debug.WriteLine("Initialised conversations with name " + name);
-            //JArray arrayOfConvos = (JArray)conversations["conversations"];
-            //arrayOfConvos.Add(new JObject(
-            //new JProperty("name", name),
-            //    new JProperty("convo", new JArray())));
+            JArray arrayOfConvos = (JArray)conversations["conversations"];
+            arrayOfConvos.Add(new JObject(
+                new JProperty("name", name),
+                new JProperty("convo", new JArray())));
         }
 
-        //        public List<Conversation> GetHistory()
-        //        {
-        //            //gå igenom alla objekt i conversations JArray
-        //            //konverta till conversations-objekt och lägg till i lista
-        //            //retunerna lista
-        //            //Debug.WriteLine("Entering getHistory");
-        //            List<Conversation> aList = new List<Conversation>();
+        //public List<Conversation> GetHistory()
+        //{
+        //    //gå igenom alla objekt i conversations JArray
+        //    //konverta till conversations-objekt och lägg till i lista
+        //    //retunerna lista
+        //    //Debug.WriteLine("Entering getHistory");
+        //    List<Conversation> aList = new List<Conversation>();
 
-        //            foreach (JObject value in conversations["conversations"])
-        //            {
-        //                var messageList = value["convo"].Value<JArray>();
-        //                List<Message> messages = messageList.ToObject<List<Message>>();
-        //                aList.Add(new Conversation((string)value["name"], messages));
-        //            }
+        //    foreach (JObject value in conversations["conversations"])
+        //    {
+        //        var messageList = value["convo"].Value<JArray>();
+        //        List<Message> messages = messageList.ToObject<List<Message>>();
+        //        aList.Add(new Conversation((string)value["name"], messages));
+        //    }
 
-        //            //Debug.WriteLine(aList.ToString());
-        //            aList.Reverse();
-        //            return aList;
+        //    //Debug.WriteLine(aList.ToString());
+        //    aList.Reverse();
+        //    return aList;
 
 
-        //        }
+        //}
 
         //        public Conversation GetLatestConvo()
         //        {

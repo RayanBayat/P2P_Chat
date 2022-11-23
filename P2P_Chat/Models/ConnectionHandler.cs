@@ -138,6 +138,7 @@ namespace P2P_Chat.Models
 
         private void tryconnecting()
         {
+           
             try
             {
                 client = new TcpClient(ip, port);
@@ -197,6 +198,7 @@ namespace P2P_Chat.Models
                     }
                     else if (msg.jsrequesttype == "HandShake")
                     {
+                        
                         Othername = msg.jsname;
                         Status = "Connected";
 
@@ -391,7 +393,8 @@ namespace P2P_Chat.Models
         {
             connectionisAccepted = true;
             Call_Incoming = false;
-            Status = "Connected";
+            
+ 
             var handshake = new Message
             {
                 jsrequesttype = "HandShake",
@@ -402,6 +405,7 @@ namespace P2P_Chat.Models
 
 
             };
+            Status = "Connected";
             senddata(handshake);
         }
         public void decline_connection()
