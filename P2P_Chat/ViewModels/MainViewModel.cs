@@ -196,11 +196,6 @@ namespace P2P_Chat.ViewModels
             {
                 PopUpActive = Connection.Call_Incoming;
             }
-            //else if(e.PropertyName == "Messages")
-            //{
-
-            //    print_on_screen(Connection.Messageslist);
-            //}
             else if(e.PropertyName == "Status")
             {
                 if (Connection.Status =="Connected")

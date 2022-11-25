@@ -7,7 +7,6 @@
         xmlns:vm ="clr-namespace:P2P_Chat.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="800">
-
     <Grid Height="400" Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"></ColumnDefinition>
@@ -26,9 +25,12 @@
         <!--<Grid.Resources>
             <vm:MainViewModel x:Key="vmc"/>
         </Grid.Resources>-->
+        
 
+
+        
         <TextBox Grid.Column="0" Grid.Row="4" Text="{Binding Path=MessageToSend, Mode=TwoWay}" Margin="0,0,0,27" Grid.ColumnSpan="2"/>
-        <Button Grid.Row="4" Grid.Column="0" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" Grid.ColumnSpan="2" >Send Message!</Button>
+        <Button x:Name="sendkey" Grid.Row="4" Grid.Column="0" Command="{Binding MessageCommand}" Margin="0,53,0,0" RenderTransformOrigin="0.506,2.062" Grid.ColumnSpan="2" KeyDown="key_KeyDown"  >Send Message!</Button>
 
 
         <TextBox Grid.Column="1" Grid.Row="0" x:Name="name" Text="{Binding Path=Name}" Margin="60,0,48,53"/>
@@ -66,11 +68,30 @@
                   ScrollViewer.CanContentScroll="False">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}" Width="100" />
-                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Path=jsmsg}" Width="300"/>
+                        <!--==============================================-->
+
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}" Width="50" />
+                        <!--==============================================-->
+                        <GridViewColumn Header="Message" Width="210">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock TextWrapping="Wrap" Text="{Binding Path=jsmsg}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <!--==============================================-->
+                        <GridViewColumn Header="Time" Width="80">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock TextWrapping="Wrap" Text="{Binding Path=jstime}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <!--==============================================-->
                     </GridView>
                 </ListView.View>
             </ListView>
         </StackPanel>
     </Grid>
+
 </Window>

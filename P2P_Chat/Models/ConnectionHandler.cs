@@ -32,6 +32,7 @@ namespace P2P_Chat.Models
 
         public string? jsname { get; set; }
         public string? jsmsg { get; set; }
+        public string? jstime { get; set; } 
 
         public JObject msgToJson()
         {
@@ -164,8 +165,9 @@ namespace P2P_Chat.Models
 
                     jsname = myname,
 
-                    jsmsg = ""
+                    jsmsg = "",
 
+                    jstime = DateTime.Now.ToString()
 
                 };
                 senddata(handshake);
@@ -284,7 +286,9 @@ namespace P2P_Chat.Models
 
                 jsname = myname,
 
-                jsmsg = message
+                jsmsg = message,
+
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -304,7 +308,9 @@ namespace P2P_Chat.Models
 
                 jsname = myname,
 
-                jsmsg = ""
+                jsmsg = "",
+
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -449,7 +455,9 @@ namespace P2P_Chat.Models
 
                 jsname = myname,
 
-                jsmsg = ""
+                jsmsg = "",
+
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -467,7 +475,9 @@ namespace P2P_Chat.Models
 
                 jsname = "",
 
-                jsmsg = ""
+                jsmsg = "",
+
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -490,7 +500,9 @@ namespace P2P_Chat.Models
 
                 jsname = "System",
 
-                jsmsg = "test1"
+                jsmsg = "test1",
+
+                jstime = DateTime.Now.ToString()
 
 
             };

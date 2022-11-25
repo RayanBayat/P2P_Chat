@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -25,6 +27,18 @@ namespace P2P_Chat.Views
             InitializeComponent();
             this.DataContext = mainViewModel;
             Closing += mainViewModel.OnWindowClosing;
+
+        }
+
+
+        private void key_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ButtonAutomationPeer peer = new ButtonAutomationPeer(sendkey);
+                IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                invokeProv.Invoke();
+            }
         }
     }
 }
