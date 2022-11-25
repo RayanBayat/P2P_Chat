@@ -16,7 +16,9 @@ using System.Windows.Interop;
 using System.IO;
 using static System.Net.Mime.MediaTypeNames;
 using System.Timers;
-
+using static P2P_Chat.ViewModels.MainViewModel;
+using System.Collections.ObjectModel;
+using Application = System.Windows.Application;
 
 namespace P2P_Chat.Models
 {
@@ -55,7 +57,19 @@ namespace P2P_Chat.Models
         public event PropertyChangedEventHandler? PropertyChanged;
         private Message messageforstore;
         Thread thread;
-
+        private ObservableCollection<Message> ?_messageslist = new ObservableCollection<Message>();
+        public ObservableCollection<Message> Messageslist
+        {
+            get
+            {
+                return _messageslist;
+            }
+            set
+            {
+                _messageslist = value;
+                //_messageslist.Add(value);
+            }
+        }
         public String Othername
         {
             get
@@ -77,6 +91,7 @@ namespace P2P_Chat.Models
             set
             {
                 messageforstore = value;
+                
                 OnPropertyChanged("MessageForStore");
             }
         }
@@ -197,6 +212,10 @@ namespace P2P_Chat.Models
                     if (msg.jsrequesttype == "BasicChat")
                     {
                         Messages = msg;
+                        Application.Current.Dispatcher.Invoke((System.Action)delegate
+                        {
+                            Messageslist.Add(msg);
+                        });
                         MessageForStore = msg;
                     }
                     else if (msg.jsrequesttype == "HandShake")
@@ -205,6 +224,7 @@ namespace P2P_Chat.Models
                         Othername = msg.jsname;
                         Status = "Connected";
                         conencted = true;
+                        MessageBox.Show("Connected");
 
                     }
                     else if (msg.jsrequesttype == "Rejected")
@@ -215,6 +235,7 @@ namespace P2P_Chat.Models
                         {
                             Status = "Listening";
                         }
+                        MessageBox.Show("Connection was rejected");
                     }
                     else if(msg.jsrequesttype == "Closing_connection")
                     {
@@ -224,6 +245,7 @@ namespace P2P_Chat.Models
                         {
                             Status = "Listening";
                         }
+                        MessageBox.Show("connection was closed by user");
                         break;
                     }
                     
@@ -304,6 +326,7 @@ namespace P2P_Chat.Models
                     if (message.jsrequesttype == "BasicChat")
                     {
                         MessageForStore = message;
+                        Messageslist.Add(message);
                     }
                     
 

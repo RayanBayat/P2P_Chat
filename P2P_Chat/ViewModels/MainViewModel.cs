@@ -28,7 +28,7 @@ namespace P2P_Chat.ViewModels
 
 
         private ConnectionHandler _connection;
-        private ObservableCollection<Messagelist> _messageslist;
+        private ObservableCollection<Message> _messageslist;
         private FileWriter fileWriter;
         private FileWriter FileWriter
         {
@@ -54,11 +54,11 @@ namespace P2P_Chat.ViewModels
                 _messagetostore = value;
             }
         }
-        public struct Messagelist
-        {
-            public string? _messages { get; set; }
-            public string? _names{ get; set; }
-        }
+        //public struct Messagelist
+        //{
+        //    public string? _messages { get; set; }
+        //    public string? _names{ get; set; }
+        //}
         public String Status
         {
             get
@@ -134,7 +134,7 @@ namespace P2P_Chat.ViewModels
                 OnPropertyChanged("PopupActive");
             }
         }
-        public ObservableCollection<Messagelist> Messageslist
+        public ObservableCollection<Message> Messageslist
         {
             get
             {
@@ -176,7 +176,18 @@ namespace P2P_Chat.ViewModels
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
             this.FileWriter = new FileWriter();
-            _messageslist = new ObservableCollection<Messagelist>();
+            _messageslist = new ObservableCollection<Message>();
+            connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
+        }
+
+        private void Messageslist_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            foreach (var item in e.NewItems)
+            {
+                print_on_screen((Message)item);
+                //MessageBox.Show(item.ToString());
+            }
+          //  MessageBox.Show(e.NewItems);
         }
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -185,11 +196,11 @@ namespace P2P_Chat.ViewModels
             {
                 PopUpActive = Connection.Call_Incoming;
             }
-            else if(e.PropertyName == "Messages")
-            {
+            //else if(e.PropertyName == "Messages")
+            //{
 
-                print_on_screen(Connection.Messages.jsname, Connection.Messages.jsmsg);
-            }
+            //    print_on_screen(Connection.Messageslist);
+            //}
             else if(e.PropertyName == "Status")
             {
                 if (Connection.Status =="Connected")
@@ -222,11 +233,11 @@ namespace P2P_Chat.ViewModels
 
         }
 
-        public void print_on_screen(String name,String msg)
+        public void print_on_screen(Message msg)
         {
             Application.Current.Dispatcher.Invoke((System.Action)delegate
             {
-                Messageslist.Add(new Messagelist { _names = name, _messages = msg });
+                Messageslist.Add(msg);
             });
         }
         public void establishConnection()
@@ -265,7 +276,7 @@ namespace P2P_Chat.ViewModels
 
         public void Saveit(Message msg)
         {
-            FileWriter.WriteToFile(msg.msgToJson());
+           // FileWriter.WriteToFile(msg.msgToJson());
         }
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         //{

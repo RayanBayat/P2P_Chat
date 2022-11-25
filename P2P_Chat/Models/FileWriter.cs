@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Windows;
 
+
 namespace P2P_Chat.Models
 {
 
@@ -22,15 +23,15 @@ namespace P2P_Chat.Models
         public FileWriter()
         {
             //Skapar folder
-            Directory.CreateDirectory(@"D:\TDDD49STORAGE");
+            Directory.CreateDirectory(@"TDDD49STORAGE");
 
             //Skapar fil
-            if (!File.Exists(@"D:\TDDD49STORAGE\conversations.json"))
+            if (!File.Exists(@"TDDD49STORAGE\conversations.json"))
             {
-                File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", String.Empty);
+                File.WriteAllText(@"TDDD49STORAGE\conversations.json", String.Empty);
             }
 
-            if (File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json") == String.Empty)
+            if (File.ReadAllText(@"TDDD49STORAGE\conversations.json") == String.Empty)
             {
                 //Debug.WriteLine("created conversations object");
                 conversations = new JObject(
@@ -38,7 +39,7 @@ namespace P2P_Chat.Models
             }
             else
             {
-                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"D:\TDDD49STORAGE\conversations.json"));
+                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"TDDD49STORAGE\conversations.json"));
                 //Debug.WriteLine(conversations.ToString());
     
             }
@@ -46,12 +47,7 @@ namespace P2P_Chat.Models
 
         public void WriteToFile(JObject jsonObj)
         {
-            //oneConvo.Add(jsonObj);
-            //String[] parts = jsonObj.ToString().Split(' ');
-            //String otherguysname = parts[3].Substring(1, parts[3].LastIndexOf('"') - 1);
-            //conversations = new JObject();
-            //conversations[otherguysname] = oneConvo;
-            //allConvos.Add(conversations);
+
 
             JArray arrayOfConvos = (JArray)conversations["conversations"];
             JObject conversation = (JObject)arrayOfConvos.Last;
@@ -60,7 +56,7 @@ namespace P2P_Chat.Models
 
             // MessageBox.Show(allConvos.ToString());
 
-            File.WriteAllText(@"D:\TDDD49STORAGE\conversations.json", conversations.ToString());
+            File.WriteAllText(@"TDDD49STORAGE\conversations.json", conversations.ToString());
         }
 
         public void InitConversation(String name)
@@ -71,6 +67,78 @@ namespace P2P_Chat.Models
                 new JProperty("name", name),
                 new JProperty("convo", new JArray())));
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         //public List<Conversation> GetHistory()
         //{

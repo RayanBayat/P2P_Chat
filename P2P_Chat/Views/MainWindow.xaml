@@ -66,8 +66,8 @@
                   ScrollViewer.CanContentScroll="False">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=_names}" Width="100" />
-                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Path=_messages}" Width="300"/>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}" Width="100" />
+                        <GridViewColumn Header="Message" DisplayMemberBinding="{Binding Path=jsmsg}" Width="300"/>
                     </GridView>
                 </ListView.View>
             </ListView>
