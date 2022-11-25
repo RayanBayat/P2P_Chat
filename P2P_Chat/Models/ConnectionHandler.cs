@@ -210,6 +210,7 @@ namespace P2P_Chat.Models
                     else if (msg.jsrequesttype == "Rejected")
                     {
                         Status = "Disconnected";
+                        conencted = false;
                         if (islistening)
                         {
                             Status = "Listening";
@@ -218,6 +219,7 @@ namespace P2P_Chat.Models
                     else if(msg.jsrequesttype == "Closing_connection")
                     {
                         Status = "Disconnected";
+                        conencted = false;
                         if (islistening)
                         {
                             Status = "Listening";
@@ -435,6 +437,7 @@ namespace P2P_Chat.Models
         {
             connectionisAccepted = false;
             Call_Incoming = false;
+            conencted = false;
             var handshake = new Message
             {
                 jsrequesttype = "Rejected",
@@ -457,6 +460,7 @@ namespace P2P_Chat.Models
         {
             connectionisAccepted = false;
             Call_Incoming = false;
+            conencted = false;
             var close_connection = new Message
             {
                 jsrequesttype = "Closing_connection",
