@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows;
 using System.Windows.Input;
 
 namespace P2P_Chat.ViewModels.Commands
 {
     internal class SendMessageCommand : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
         private MainViewModel _parent;
 
         public MainViewModel Parent
@@ -26,6 +30,12 @@ namespace P2P_Chat.ViewModels.Commands
 
         public bool CanExecute(object? parameter)
         {
+            
+            var msg = parameter as String;
+            if (msg == null || string.IsNullOrEmpty(msg))
+            {
+                return false;
+            }
             return true;
         }
 

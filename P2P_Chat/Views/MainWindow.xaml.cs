@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -33,12 +34,50 @@ namespace P2P_Chat.Views
 
         private void key_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+
+
+            if (sendbtn.IsEnabled)
             {
-                ButtonAutomationPeer peer = new ButtonAutomationPeer(sendkey);
+
+            
+
+            if (e.Key == Key.Return)
+            {
+                ButtonAutomationPeer peer = new ButtonAutomationPeer(sendbtn);
                 IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 invokeProv.Invoke();
+
             }
+            }
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void Statusupdater(object sender, DataTransferEventArgs e)
+        {
+            var label = sender as Label;
+          //  something.Background = new SolidColorBrush(Colors.White);
+            if (label.Content.ToString() == "Listening")
+            {
+               
+            }
+            MessageBox.Show(label.Content.ToString());
         }
     }
 }

@@ -57,7 +57,7 @@ namespace P2P_Chat.Models
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
         private Message messageforstore;
-        Thread thread;
+        Thread ListenThread,SendThread;
         private ObservableCollection<Message> ?_messageslist = new ObservableCollection<Message>();
         public ObservableCollection<Message> Messageslist
         {
@@ -171,10 +171,10 @@ namespace P2P_Chat.Models
 
                 };
                 senddata(handshake);
-                Thread thread = new Thread(new ThreadStart(read_data));
+                ListenThread = new Thread(new ThreadStart(read_data));
                 Thread thread1 = new Thread(new ThreadStart(last_handshake));
-                thread.Name = "en annan tråd";
-                thread.Start();
+                ListenThread.Name = "lysnande tråd";
+                ListenThread.Start();
                 thread1.Name = "last shake";
                 thread1.Start();
                 Status = "Trying to connect";
@@ -192,7 +192,7 @@ namespace P2P_Chat.Models
             {
                 try
                 {
-                    Byte[] data = new Byte[256];
+                    Byte[] data = new Byte[262144];
 
                     // String to store the response ASCII representation.
                     String responseData = String.Empty;
@@ -279,8 +279,8 @@ namespace P2P_Chat.Models
         }
             public void prepare_to_send(String message)
         {
-           
-            var msg = new Message
+            
+             var msg = new Message
             {
                 jsrequesttype = "BasicChat",
 
@@ -293,7 +293,8 @@ namespace P2P_Chat.Models
 
             };
             Messages = msg;
-            senddata(Messages);
+            SendThread = new Thread(() => senddata(Messages));
+            SendThread.Start();
         }
 
         private void last_handshake()
@@ -368,10 +369,10 @@ namespace P2P_Chat.Models
                 IPAddress localAddr = IPAddress.Parse("127.0.0.1");
                 server = new TcpListener(localAddr, port);
                 server.Start();
-                thread = new Thread(new ThreadStart(listeningloop));
-                thread.Name = "en annan tråd";
+                ListenThread = new Thread(new ThreadStart(listeningloop));
+                ListenThread.Name = "lysnande tråd";
                 islistening = true;
-                thread.Start();
+                ListenThread.Start();
                 Status = "Listening";
             }
             catch (SocketException e)
