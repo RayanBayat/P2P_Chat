@@ -38,7 +38,8 @@ namespace P2P_Chat.Models
         {
             return new JObject(
                     new JProperty("name", jsname),
-                    new JProperty("msg", jsmsg)
+                    new JProperty("msg", jsmsg),
+                    new JProperty("time", jstime)
                     );
         }
 
@@ -167,7 +168,7 @@ namespace P2P_Chat.Models
 
                     jsmsg = "",
 
-                    jstime = DateTime.Now.ToString()
+                    jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
                 };
                 senddata(handshake);
@@ -288,7 +289,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = message,
 
-                jstime = DateTime.Now.ToString()
+                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
 
             };
@@ -311,7 +312,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString()
+                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
 
             };
@@ -458,7 +459,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString()
+                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
 
             };
@@ -478,7 +479,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString()
+                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
 
             };
@@ -503,7 +504,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "test1",
 
-                jstime = DateTime.Now.ToString()
+                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
 
 
             };

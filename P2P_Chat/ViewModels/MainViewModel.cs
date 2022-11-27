@@ -185,6 +185,7 @@ namespace P2P_Chat.ViewModels
             foreach (var item in e.NewItems)
             {
                 print_on_screen((Message)item);
+                Saveit((Message)item);
                 //MessageBox.Show(item.ToString());
             }
           //  MessageBox.Show(e.NewItems);
@@ -206,11 +207,11 @@ namespace P2P_Chat.ViewModels
                 }
                 Status = Connection.Status;
             }
-            else if (e.PropertyName == "MessageForStore")
-            {
-                Messagetostore = Connection.MessageForStore;
-                Saveit(Messagetostore);
-            }
+            //else if (e.PropertyName == "MessageForStore")
+            //{
+            //    Messagetostore = Connection.MessageForStore;
+            //    Saveit(Messagetostore);
+            //}
            // MessageBox.Show(e. + e.PropertyName + " has changed");
           //  throw new NotImplementedException();
         }
@@ -271,7 +272,7 @@ namespace P2P_Chat.ViewModels
 
         public void Saveit(Message msg)
         {
-           // FileWriter.WriteToFile(msg.msgToJson());
+            FileWriter.WriteToFile(msg.msgToJson());
         }
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         //{

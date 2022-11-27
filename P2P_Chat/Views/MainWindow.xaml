@@ -327,6 +327,23 @@
                 </ListView>
             </StackPanel>
 
+            <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Vertical" Margin="0,5,10,28"
+                        Grid.RowSpan="4" Grid.ColumnSpan="2">
+                <ListView Height="286"  ItemsSource="{Binding Path=Historylist}"
+                                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          
+                  ScrollViewer.CanContentScroll="False">
+                    <ListView.View>
+                        <GridView>
+                            <!--==============================================-->
+
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}"  />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </StackPanel>
+
+
         </Grid>
     </Border>
 
