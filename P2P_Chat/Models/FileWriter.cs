@@ -23,15 +23,15 @@ namespace P2P_Chat.Models
         public FileWriter()
         {
             //Skapar folder
-            Directory.CreateDirectory(@"TDDD49STORAGE");
+            Directory.CreateDirectory(@"c:\TDDD49STORAGE");
 
             //Skapar fil
-            if (!File.Exists(@"TDDD49STORAGE\conversations.json"))
+            if (!File.Exists(@"c:\TDDD49STORAGE\conversations.json"))
             {
-                File.WriteAllText(@"TDDD49STORAGE\conversations.json", String.Empty);
+                File.WriteAllText(@"c:\TDDD49STORAGE\conversations.json", String.Empty);
             }
 
-            if (File.ReadAllText(@"TDDD49STORAGE\conversations.json") == String.Empty)
+            if (File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json") == String.Empty)
             {
                 //Debug.WriteLine("created conversations object");
                 conversations = new JObject(
@@ -39,7 +39,7 @@ namespace P2P_Chat.Models
             }
             else
             {
-                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"TDDD49STORAGE\conversations.json"));
+                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json"));
                 MessageBox.Show(conversations.ToString());
                 //Debug.WriteLine(conversations.ToString());
 
