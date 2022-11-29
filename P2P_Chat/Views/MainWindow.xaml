@@ -329,7 +329,7 @@
 
             <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Vertical" Margin="0,5,10,28"
                         Grid.RowSpan="4" Grid.ColumnSpan="2">
-                <ListView Height="286"  ItemsSource="{Binding Path=Historylist}"
+                <ListView Height="286"  ItemsSource="{Binding Path=ConvoHistory}"
                                          ScrollViewer.VerticalScrollBarVisibility="Visible"
                           
                   ScrollViewer.CanContentScroll="False">
@@ -337,7 +337,19 @@
                         <GridView>
                             <!--==============================================-->
 
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}"  />
+                            
+                            <GridViewColumn Header="Name">
+                                <GridViewColumn.CellTemplate>
+                                    
+                                    <DataTemplate>
+                                        <Button Command="{Binding ShowOldConversationCommand}" CommandParameter="{Binding ListOfMessages}" 
+                                                Margin="109,14,20,40" Grid.Row="2" >
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding Path=jsname}" />
+                                        </Button>
+                                        
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>

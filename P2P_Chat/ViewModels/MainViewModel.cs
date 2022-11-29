@@ -42,6 +42,7 @@ namespace P2P_Chat.ViewModels
         public ICommand AcceptConnectionCommand { get; set; }
         public ICommand DeclineConnectionCommand { get; set; }
         public ICommand DisconnectCommand { get; set; }
+        public ICommand ShowOldConversationCommand { get; set; }
 
         public Message Messagetostore
         {
@@ -52,6 +53,19 @@ namespace P2P_Chat.ViewModels
             set
             {
                 _messagetostore = value;
+            }
+        }
+        private ObservableCollection<Conversation> convoHistory;
+        public ObservableCollection<Conversation> ConvoHistory
+        {
+            get 
+            { 
+                return convoHistory; 
+            }
+            set
+            {
+                convoHistory = value;
+                OnPropertyChanged("ConvoHistory");
             }
         }
         //public struct Messagelist
@@ -176,8 +190,12 @@ namespace P2P_Chat.ViewModels
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
             this.FileWriter = new FileWriter();
+            this.ShowOldConversationCommand = new ShowOldConversationCommand(this);
             _messageslist = new ObservableCollection<Message>();
+            
             connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
+            this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
+            MessageBox.Show(this.ConvoHistory.ToString());
         }
 
         private void Messageslist_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -273,6 +291,16 @@ namespace P2P_Chat.ViewModels
         public void Saveit(Message msg)
         {
             FileWriter.WriteToFile(msg.msgToJson());
+        }
+
+
+        public void ShowOldConversationMethod(List<Message> aList)
+        {
+            if (!Connection.conencted)
+            {
+                Messageslist.Clear();
+                aList.ToList().ForEach(a => Messageslist.Add(a)); ;
+            }
         }
         //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         //{

@@ -37,18 +37,44 @@ namespace P2P_Chat.Models
         public JObject msgToJson()
         {
             return new JObject(
-                    new JProperty("name", jsname),
-                    new JProperty("msg", jsmsg),
-                    new JProperty("time", jstime)
+                    new JProperty("jsrequesttype", jsrequesttype),
+                    new JProperty("jsname", jsname),
+                    new JProperty("jsmsg", jsmsg),
+                    new JProperty("jstime", jstime)
                     );
         }
 
+    }
+    public class Conversation
+    {
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
+        }
+
+        private List<Message> listOfMessages;
+
+        public List<Message> ListOfMessages
+        {
+            get { return listOfMessages; }
+            set { listOfMessages = value; }
+        }
+
+
+        public Conversation(string name, List<Message> listOfMessages)
+        {
+            this.Name = name;
+            this.ListOfMessages = listOfMessages;
+        }
     }
     public class ConnectionHandler : INotifyPropertyChanged
     {
 
         bool connectionisAccepted, callincoming;
-        private bool call_incoming, islistening,conencted = false;
+        private bool call_incoming, islistening;
+        public bool conencted = false;
         private string? _status = "Disconnected", myname,othername;
         private Message? _messages;
         private Int32 port;
@@ -58,7 +84,7 @@ namespace P2P_Chat.Models
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
         private Message messageforstore;
-        Thread ListenThread,SendThread;
+        Thread thread;
         private ObservableCollection<Message> ?_messageslist = new ObservableCollection<Message>();
         public ObservableCollection<Message> Messageslist
         {
@@ -168,14 +194,14 @@ namespace P2P_Chat.Models
 
                     jsmsg = "",
 
-                    jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                    jstime = DateTime.Now.ToString()
 
                 };
                 senddata(handshake);
-                ListenThread = new Thread(new ThreadStart(read_data));
+                Thread thread = new Thread(new ThreadStart(read_data));
                 Thread thread1 = new Thread(new ThreadStart(last_handshake));
-                ListenThread.Name = "lysnande tråd";
-                ListenThread.Start();
+                thread.Name = "en annan tråd";
+                thread.Start();
                 thread1.Name = "last shake";
                 thread1.Start();
                 Status = "Trying to connect";
@@ -193,7 +219,7 @@ namespace P2P_Chat.Models
             {
                 try
                 {
-                    Byte[] data = new Byte[262144];
+                    Byte[] data = new Byte[256];
 
                     // String to store the response ASCII representation.
                     String responseData = String.Empty;
@@ -280,8 +306,8 @@ namespace P2P_Chat.Models
         }
             public void prepare_to_send(String message)
         {
-            
-             var msg = new Message
+           
+            var msg = new Message
             {
                 jsrequesttype = "BasicChat",
 
@@ -289,13 +315,12 @@ namespace P2P_Chat.Models
 
                 jsmsg = message,
 
-                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                jstime = DateTime.Now.ToString()
 
 
             };
             Messages = msg;
-            SendThread = new Thread(() => senddata(Messages));
-            SendThread.Start();
+            senddata(Messages);
         }
 
         private void last_handshake()
@@ -312,7 +337,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -370,10 +395,10 @@ namespace P2P_Chat.Models
                 IPAddress localAddr = IPAddress.Parse("127.0.0.1");
                 server = new TcpListener(localAddr, port);
                 server.Start();
-                ListenThread = new Thread(new ThreadStart(listeningloop));
-                ListenThread.Name = "lysnande tråd";
+                thread = new Thread(new ThreadStart(listeningloop));
+                thread.Name = "en annan tråd";
                 islistening = true;
-                ListenThread.Start();
+                thread.Start();
                 Status = "Listening";
             }
             catch (SocketException e)
@@ -459,7 +484,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -479,7 +504,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "",
 
-                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                jstime = DateTime.Now.ToString()
 
 
             };
@@ -504,7 +529,7 @@ namespace P2P_Chat.Models
 
                 jsmsg = "test1",
 
-                jstime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+                jstime = DateTime.Now.ToString()
 
 
             };
