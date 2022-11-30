@@ -253,7 +253,7 @@ namespace P2P_Chat.Models
                         Othername = msg.jsname;
                         Status = "Connected";
                         conencted = true;
-                        MessageBox.Show("Connected");
+                       // MessageBox.Show(Status);
 
                     }
                     else if (msg.jsrequesttype == "Rejected")
@@ -264,7 +264,7 @@ namespace P2P_Chat.Models
                         {
                             Status = "Listening";
                         }
-                        MessageBox.Show("Connection was rejected");
+                        //MessageBox.Show("Connection was rejected");
                     }
                     else if(msg.jsrequesttype == "Closing_connection")
                     {
@@ -274,7 +274,7 @@ namespace P2P_Chat.Models
                         {
                             Status = "Listening";
                         }
-                        MessageBox.Show("connection was closed by user");
+                      //  MessageBox.Show("connection was closed by user");
                         break;
                     }
                     
@@ -500,7 +500,7 @@ namespace P2P_Chat.Models
             {
                 jsrequesttype = "Rejected",
 
-                jsname = "",
+                jsname = myname,
 
                 jsmsg = "",
 

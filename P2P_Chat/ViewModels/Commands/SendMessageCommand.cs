@@ -41,6 +41,7 @@ namespace P2P_Chat.ViewModels.Commands
 
         public void Execute(object? parameter)
         {
+         
             Parent.sendMessage();
         }
     }

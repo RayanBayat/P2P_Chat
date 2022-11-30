@@ -182,6 +182,8 @@ namespace P2P_Chat.ViewModels
             this.Connection = connectionHandler;
             // prenumere på event från _connection handler
             connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
+            connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
+            
 
             this.ToIPCommand = new Connect(this);
             this.MessageCommand = new SendMessageCommand(this);
@@ -190,12 +192,12 @@ namespace P2P_Chat.ViewModels
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
             this.FileWriter = new FileWriter();
+            this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
             this.ShowOldConversationCommand = new ShowOldConversationCommand(this);
             _messageslist = new ObservableCollection<Message>();
             
-            connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
-            this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
-            MessageBox.Show(this.ConvoHistory.ToString());
+
+            //MessageBox.Show(this.ConvoHistory.ToString());
         }
 
         private void Messageslist_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -217,6 +219,7 @@ namespace P2P_Chat.ViewModels
             }
             else if(e.PropertyName == "Status")
             {
+                MessageBox.Show(Status);
                 if (Connection.Status =="Connected")
                 {
                

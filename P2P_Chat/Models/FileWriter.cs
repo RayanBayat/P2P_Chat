@@ -23,15 +23,15 @@ namespace P2P_Chat.Models
         public FileWriter()
         {
             //Skapar folder
-            Directory.CreateDirectory(@"c:\TDDD49STORAGE");
+            Directory.CreateDirectory(@"TDDD49STORAGE");
 
             //Skapar fil
-            if (!File.Exists(@"c:\TDDD49STORAGE\conversations.json"))
+            if (!File.Exists(@"TDDD49STORAGE\conversations.json"))
             {
-                File.WriteAllText(@"c:\TDDD49STORAGE\conversations.json", String.Empty);
+                File.WriteAllText(@"TDDD49STORAGE\conversations.json", String.Empty);
             }
 
-            if (File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json") == String.Empty)
+            if (File.ReadAllText(@"TDDD49STORAGE\conversations.json") == String.Empty)
             {
                 //Debug.WriteLine("created conversations object");
                 conversations = new JObject(
@@ -39,8 +39,8 @@ namespace P2P_Chat.Models
             }
             else
             {
-                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"c:\TDDD49STORAGE\conversations.json"));
-                MessageBox.Show(conversations.ToString());
+                conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"TDDD49STORAGE\conversations.json"));
+                //MessageBox.Show(conversations.ToString());
                 //Debug.WriteLine(conversations.ToString());
 
             }
@@ -81,14 +81,16 @@ namespace P2P_Chat.Models
             {
                 
                 var messageList = value["convo"].Value<JArray>();
-                MessageBox.Show(messageList.ToString());
+               // MessageBox.Show(messageList.ToString());
                 List<Message> messages = messageList.ToObject<List<Message>>();
                 aList.Add(new Conversation((string)value["name"], messages));
+                
             }
-
-           // MessageBox.Show(aList[0].ToString());
+           
+            // MessageBox.Show(aList[0].ToString());
             //Debug.WriteLine(aList.ToString());
             aList.Reverse();
+            
             return aList;
 
 

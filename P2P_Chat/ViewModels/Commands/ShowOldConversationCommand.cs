@@ -11,12 +11,10 @@ namespace P2P_Chat.ViewModels.Commands
 {
     internal class ShowOldConversationCommand : ICommand
     {
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
+
         private MainViewModel _parent;
+
+        public event EventHandler? CanExecuteChanged;
 
         public MainViewModel Parent
         {
@@ -38,8 +36,6 @@ namespace P2P_Chat.ViewModels.Commands
         public void Execute(object? parameter)
         {
             List<Message> obj = parameter as List<Message>;
-            MessageBox.Show(obj.ToString());
-            MessageBox.Show("hello");
             this.Parent.ShowOldConversationMethod(obj);
         }
     }
