@@ -19,6 +19,7 @@ using System.Timers;
 using static P2P_Chat.ViewModels.MainViewModel;
 using System.Collections.ObjectModel;
 using Application = System.Windows.Application;
+using System.Media;
 
 namespace P2P_Chat.Models
 {
@@ -277,6 +278,11 @@ namespace P2P_Chat.Models
                       //  MessageBox.Show("connection was closed by user");
                         break;
                     }
+                    else if(msg.jsrequesttype == "Buzz")
+                    {
+
+                        SystemSounds.Beep.Play();
+                    }
                     
 
 
@@ -303,6 +309,25 @@ namespace P2P_Chat.Models
                 }
 
             }
+        }
+
+        public void sendbuzz()
+        {
+            var msg = new Message
+            {
+                jsrequesttype = "Buzz",
+
+                jsname = myname,
+
+                jsmsg = "",
+
+                jstime = DateTime.Now.ToString()
+
+
+            };
+            Messages = msg;
+            senddata(Messages);
+            
         }
             public void prepare_to_send(String message)
         {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Windows;
-
+using System.Text.RegularExpressions;
 
 namespace P2P_Chat.Models
 {
@@ -18,8 +18,6 @@ namespace P2P_Chat.Models
     public class FileWriter
     {
         private JObject conversations;
-        //private JArray oneConvo = new JArray();
-        //private JArray allConvos = new JArray();
         public FileWriter()
         {
             //Skapar folder
@@ -40,9 +38,6 @@ namespace P2P_Chat.Models
             else
             {
                 conversations = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(@"TDDD49STORAGE\conversations.json"));
-                //MessageBox.Show(conversations.ToString());
-                //Debug.WriteLine(conversations.ToString());
-
             }
         }
 
@@ -52,7 +47,7 @@ namespace P2P_Chat.Models
 
             JArray arrayOfConvos = (JArray)conversations["conversations"];
             JObject conversation = (JObject)arrayOfConvos.Last;
-            JArray aConvo = (JArray)conversation["convo"];
+            JArray aConvo = (JArray)conversation["conversation"];
             aConvo.Add(jsonObj);
 
             // MessageBox.Show(allConvos.ToString());
@@ -66,29 +61,23 @@ namespace P2P_Chat.Models
             JArray arrayOfConvos = (JArray)conversations["conversations"];
             arrayOfConvos.Add(new JObject(
                 new JProperty("name", name),
-                new JProperty("convo", new JArray())));
+                new JProperty("conversation", new JArray())));
         }
 
         public List<Conversation> GetHistory()
         {
-            //gå igenom alla objekt i conversations JArray
-            //konverta till conversations-objekt och lägg till i lista
-            //retunerna lista
-            //Debug.WriteLine("Entering getHistory");
+
             List<Conversation> aList = new List<Conversation>();
 
-            foreach (JObject value in conversations["conversations"])
+            foreach (JObject person in conversations["conversations"])
             {
                 
-                var messageList = value["convo"].Value<JArray>();
-               // MessageBox.Show(messageList.ToString());
+                var messageList = person["conversation"].Value<JArray>();
                 List<Message> messages = messageList.ToObject<List<Message>>();
-                aList.Add(new Conversation((string)value["name"], messages));
+                aList.Add(new Conversation((string)person["name"], messages));
                 
             }
-           
-            // MessageBox.Show(aList[0].ToString());
-            //Debug.WriteLine(aList.ToString());
+
             aList.Reverse();
             
             return aList;
@@ -96,14 +85,18 @@ namespace P2P_Chat.Models
 
         }
 
-        public Conversation GetLatestConvo()
+        public IEnumerable<Conversation> filter(string search)
         {
-            JArray arrayOfConvos = (JArray)conversations["conversations"];
-            JObject lastObj = (JObject)arrayOfConvos.Last;
-            var messageList = lastObj["convo"].Value<JArray>();
-            List<Message> messages = messageList.ToObject<List<Message>>();
-            return new Conversation((string)lastObj["name"], messages);
+            var myRegex = new Regex("^" + search, RegexOptions.IgnoreCase);
+
+            IEnumerable<Conversation> conversations = from conversation in GetHistory()
+                                                      where myRegex.IsMatch(conversation.Name)
+                                                      select conversation;
+            return conversations;
         }
+
+
+
     }
 
 }

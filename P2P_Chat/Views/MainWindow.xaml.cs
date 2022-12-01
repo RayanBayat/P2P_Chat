@@ -72,12 +72,8 @@ namespace P2P_Chat.Views
         private void Statusupdater(object sender, DataTransferEventArgs e)
         {
             var label = sender as Label;
-          //  something.Background = new SolidColorBrush(Colors.White);
-            if (label.Content.ToString() == "Listening")
-            {
-               
-            }
-            MessageBox.Show(label.Content.ToString());
+
+            
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using P2P_Chat.Models;
+﻿using Microsoft.Win32;
+using P2P_Chat.Models;
 using P2P_Chat.ViewModels.Commands;
 using System;
 using System.Collections.Generic;
@@ -6,8 +7,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Media;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,7 +27,7 @@ namespace P2P_Chat.ViewModels
         private Message _messagetostore;
 
         private bool _popupActive;
-        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected";
+        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected",_search;
         private Int32 _port = 22;
 
 
@@ -43,6 +47,7 @@ namespace P2P_Chat.ViewModels
         public ICommand DeclineConnectionCommand { get; set; }
         public ICommand DisconnectCommand { get; set; }
         public ICommand ShowOldConversationCommand { get; set; }
+
 
         public Message Messagetostore
         {
@@ -68,11 +73,18 @@ namespace P2P_Chat.ViewModels
                 OnPropertyChanged("ConvoHistory");
             }
         }
-        //public struct Messagelist
-        //{
-        //    public string? _messages { get; set; }
-        //    public string? _names{ get; set; }
-        //}
+        public String Search
+        {
+            get
+            {
+                return _search;
+            }
+            set
+            {
+                _search = value;
+                Searchnames();
+            }
+        }
         public String Status
         {
             get
@@ -219,12 +231,16 @@ namespace P2P_Chat.ViewModels
             }
             else if(e.PropertyName == "Status")
             {
-                MessageBox.Show(Status);
+       
                 if (Connection.Status =="Connected")
                 {
                
                     fileWriter.InitConversation(Connection.Othername);
 
+                }
+                if (!Connection.conencted)
+                {
+                    this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
                 }
                 Status = Connection.Status;
             }
@@ -244,7 +260,15 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            Connection.prepare_to_send(MessageToSend);
+            if (MessageToSend == "Buzz")
+            {
+                Connection.sendbuzz();
+            }
+            else
+            {
+                Connection.prepare_to_send(MessageToSend);
+            }
+            
             MessageToSend = "";
 
 
@@ -305,16 +329,14 @@ namespace P2P_Chat.ViewModels
                 aList.ToList().ForEach(a => Messageslist.Add(a)); ;
             }
         }
-        //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        //{
-        //    //if (propertyName == "Search")
-        //    //{
-        //    //    FilterSearch();
-        //    //}
-        //    if (PropertyChanged != null)
-        //    {
-        //        PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        //    }
-        //}
+        private void Searchnames()
+        {
+            ConvoHistory = new ObservableCollection<Conversation>(fileWriter.filter(Search));
+
+
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer();
+            player.SoundLocation = @"buzz.wav";
+            player.Play();
+        }
     }
 }
