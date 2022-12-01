@@ -85,7 +85,7 @@ namespace P2P_Chat.Models
         NetworkStream? stream;
         public event PropertyChangedEventHandler? PropertyChanged;
         private Message messageforstore;
-        Thread thread;
+        Thread listenthread,sendthread;
         private ObservableCollection<Message> ?_messageslist = new ObservableCollection<Message>();
         public ObservableCollection<Message> Messageslist
         {
@@ -199,10 +199,11 @@ namespace P2P_Chat.Models
 
                 };
                 senddata(handshake);
-                Thread thread = new Thread(new ThreadStart(read_data));
+                Thread listenthread = new Thread(new ThreadStart(read_data));
+                //skickar bara en sista handshake, det hade kunnat göras med main tråden med
                 Thread thread1 = new Thread(new ThreadStart(last_handshake));
-                thread.Name = "en annan tråd";
-                thread.Start();
+                listenthread.Name = "lysnande tråd";
+                listenthread.Start();
                 thread1.Name = "last shake";
                 thread1.Start();
                 Status = "Trying to connect";
@@ -326,12 +327,13 @@ namespace P2P_Chat.Models
 
             };
             Messages = msg;
-            senddata(Messages);
+
+            sendthread = new Thread(() => senddata(Messages));
+            sendthread.Start();
             
         }
             public void prepare_to_send(String message)
-        {
-           
+        {        
             var msg = new Message
             {
                 jsrequesttype = "BasicChat",
@@ -341,19 +343,17 @@ namespace P2P_Chat.Models
                 jsmsg = message,
 
                 jstime = DateTime.Now.ToString()
-
-
             };
             Messages = msg;
-            senddata(Messages);
+            sendthread = new Thread(() => senddata(Messages));
+            sendthread.Start();
         }
-
         private void last_handshake()
         {
-            while(!conencted)
-            {
+            //while(!conencted)
+            //{
 
-            }
+            //}
             var handshake = new Message
             {
                 jsrequesttype = "HandShake",
@@ -420,10 +420,10 @@ namespace P2P_Chat.Models
                 IPAddress localAddr = IPAddress.Parse("127.0.0.1");
                 server = new TcpListener(localAddr, port);
                 server.Start();
-                thread = new Thread(new ThreadStart(listeningloop));
-                thread.Name = "en annan tråd";
+                listenthread = new Thread(new ThreadStart(listeningloop));
+                listenthread.Name = "lysnande tråden";
                 islistening = true;
-                thread.Start();
+                listenthread.Start();
                 Status = "Listening";
             }
             catch (SocketException e)
@@ -438,6 +438,11 @@ namespace P2P_Chat.Models
             //MessageBox.Show(Thread.CurrentThread.Name);
             while (true)
             {
+                if (connectionisAccepted)
+                {
+
+                    read_data();
+                }
                 if (!Call_Incoming)
                 {
                     try
@@ -453,6 +458,7 @@ namespace P2P_Chat.Models
 
                         Call_Incoming = true;
                         stream = client.GetStream();
+
                         Status = "Getting a call";
                     }
                     catch (SocketException e)
@@ -464,11 +470,7 @@ namespace P2P_Chat.Models
                 }
 
                 
-                if (connectionisAccepted)
-                {
 
-                    read_data();
-                }
                 
 
                 
@@ -497,6 +499,8 @@ namespace P2P_Chat.Models
 
         public void accept_connection()
         {
+            //Status = "Connected";
+            //conencted = true;
             connectionisAccepted = true;
             Call_Incoming = false;
             
