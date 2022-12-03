@@ -27,7 +27,7 @@ namespace P2P_Chat.Views
         {
             InitializeComponent();
             this.DataContext = mainViewModel;
-            Closing += mainViewModel.OnWindowClosing;
+            Closing += mainViewModel.OnWindowClosing!;
 
         }
 
@@ -45,7 +45,7 @@ namespace P2P_Chat.Views
             {
                 ButtonAutomationPeer peer = new ButtonAutomationPeer(sendbtn);
                 IInvokeProvider invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-                invokeProv.Invoke();
+                invokeProv!.Invoke();
 
             }
             }

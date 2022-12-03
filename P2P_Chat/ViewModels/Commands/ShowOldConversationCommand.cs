@@ -24,7 +24,7 @@ namespace P2P_Chat.ViewModels.Commands
 
         public ShowOldConversationCommand(MainViewModel parent)
         {
-            this.Parent = parent;
+            this._parent = parent;
         }
 
         public bool CanExecute(object? parameter)
@@ -36,7 +36,7 @@ namespace P2P_Chat.ViewModels.Commands
         public void Execute(object? parameter)
         {
             List<Message> obj = parameter as List<Message>;
-            this.Parent.ShowOldConversationMethod(obj);
+            this.Parent.ShowOldConversationMethod(obj!);
         }
     }
 }

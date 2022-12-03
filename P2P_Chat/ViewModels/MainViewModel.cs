@@ -23,21 +23,21 @@ namespace P2P_Chat.ViewModels
     public class MainViewModel :INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-
+        int acceptconnection = 1, rejectconnection = 2, disconnect = 3, stoplistening = 4;
         private Message _messagetostore;
 
         private bool _popupActive;
         private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected",_search;
-        private Int32 _port = 22;
+        private String _port = "22";
 
 
         private ConnectionHandler _connection;
         private ObservableCollection<Message> _messageslist;
-        private FileWriter fileWriter;
-        private FileWriter FileWriter
+        private WritingToStorage _writingToStorage;
+        private WritingToStorage WritingToStorage
         {
-            get { return fileWriter; }
-            set { fileWriter = value; }
+            get { return _writingToStorage; }
+            set { _writingToStorage = value; }
         }
         //commands
         public ICommand MessageCommand { get; set; }
@@ -60,8 +60,8 @@ namespace P2P_Chat.ViewModels
                 _messagetostore = value;
             }
         }
-        private ObservableCollection<Conversation> convoHistory;
-        public ObservableCollection<Conversation> ConvoHistory
+        private ObservableCollection<oneConversation> convoHistory;
+        public ObservableCollection<oneConversation> ConvoHistory
         {
             get 
             { 
@@ -121,7 +121,7 @@ namespace P2P_Chat.ViewModels
             }
         }
 
-        public Int32 Port
+        public String Port
         {
             get
             {
@@ -203,8 +203,9 @@ namespace P2P_Chat.ViewModels
             this.AcceptConnectionCommand = new AcceptConnectionCommand(this);
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
-            this.FileWriter = new FileWriter();
-            this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
+            this.WritingToStorage = new WritingToStorage();
+            this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
+            
             this.ShowOldConversationCommand = new ShowOldConversationCommand(this);
             _messageslist = new ObservableCollection<Message>();
             
@@ -234,23 +235,32 @@ namespace P2P_Chat.ViewModels
        
                 if (Connection.Status =="Connected")
                 {
-               
-                    fileWriter.InitConversation(Connection.Othername);
+
+                    WritingToStorage.InitConversation(Connection.Othername);
+                    if (Status != Connection.Status)
+                    {
+                        Application.Current.Dispatcher.Invoke((System.Action)delegate
+                        {
+                            Messageslist.Clear();
+                        });
+                    }
 
                 }
-                if (!Connection.conencted)
+                if (!Connection.Connected)
                 {
-                    this.ConvoHistory = new ObservableCollection<Conversation>(FileWriter.GetHistory());
+                    this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
                 }
                 Status = Connection.Status;
             }
-            //else if (e.PropertyName == "MessageForStore")
-            //{
-            //    Messagetostore = Connection.MessageForStore;
-            //    Saveit(Messagetostore);
-            //}
-           // MessageBox.Show(e. + e.PropertyName + " has changed");
-          //  throw new NotImplementedException();
+            else if(e.PropertyName == "ErrorMessage")
+            {
+                MessageBox.Show(Connection.ErrorMessage);
+            }
+            else if(e.PropertyName == "Buzz")
+            {
+                playBuzz();
+            }
+
         }
 
 
@@ -260,16 +270,9 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            if (MessageToSend == "Buzz")
-            {
-                Connection.sendbuzz();
-            }
-            else
-            {
-                Connection.prepare_to_send(MessageToSend);
-            }
-            
-            MessageToSend = "";
+
+           Connection.prepare_to_send(MessageToSend);
+           MessageToSend = String.Empty;
 
 
         }
@@ -283,11 +286,11 @@ namespace P2P_Chat.ViewModels
         }
         public void establishConnection()
         {
-            Connection.connect(ToIP, Port,Name);
+            Connection.connect(ToIP, Int32.Parse(Port), Name);
         }
         public void startListening()
         {
-            Connection.startListening(Port,Name);
+            Connection.startListening(Int32.Parse(Port), Name);
         }
 
         void OnPropertyChanged(string property)
@@ -299,31 +302,31 @@ namespace P2P_Chat.ViewModels
         }
         public void AcceptConnection()
         {
-            _connection.accept_connection();
+            _connection.take_action(acceptconnection);
         }
         public void DeclineConnection()
         {
-            _connection.decline_connection();
+            _connection.take_action(rejectconnection);
         }
         public void Disconnect()
         {
-            _connection.close_connection();
+            _connection.take_action(disconnect);
         }
 
         public void OnWindowClosing(object sender, CancelEventArgs e)
         {
-            _connection.close_connection();
+            _connection.take_action(stoplistening);
         }
 
         public void Saveit(Message msg)
         {
-            FileWriter.WriteToFile(msg.msgToJson());
+            WritingToStorage.WriteToFile(msg.msgToJson());
         }
 
 
         public void ShowOldConversationMethod(List<Message> aList)
         {
-            if (!Connection.conencted)
+            if (!Connection.Connected)
             {
                 Messageslist.Clear();
                 aList.ToList().ForEach(a => Messageslist.Add(a)); ;
@@ -331,12 +334,11 @@ namespace P2P_Chat.ViewModels
         }
         private void Searchnames()
         {
-            ConvoHistory = new ObservableCollection<Conversation>(fileWriter.filter(Search));
-
-
-            System.Media.SoundPlayer player = new System.Media.SoundPlayer();
-            player.SoundLocation = @"buzz.wav";
-            player.Play();
+            ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.filter(Search));
+        }
+        private void playBuzz()
+        {
+            SystemSounds.Beep.Play();
         }
     }
 }
