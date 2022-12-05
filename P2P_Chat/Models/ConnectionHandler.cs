@@ -255,6 +255,7 @@ namespace P2P_Chat.Models
                         Othername = msg.jsname;
                         Status = "Connected";
                         conencted = true;
+                        
                        // MessageBox.Show(Status);
 
                     }

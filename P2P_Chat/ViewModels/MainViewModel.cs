@@ -231,11 +231,20 @@ namespace P2P_Chat.ViewModels
             }
             else if(e.PropertyName == "Status")
             {
-       
-                if (Connection.Status =="Connected")
+
+                if (!Connection.conencted)
                 {
-               
+                    Application.Current.Dispatcher.Invoke((System.Action)delegate
+                    {
+                        Messageslist.Clear();
+                    });
+                }
+                    if (Connection.Status =="Connected")
+                {
+
+                    
                     fileWriter.InitConversation(Connection.Othername);
+                   
 
                 }
                 if (!Connection.conencted)
