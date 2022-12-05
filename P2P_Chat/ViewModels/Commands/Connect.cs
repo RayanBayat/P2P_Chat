@@ -9,7 +9,11 @@ namespace P2P_Chat.ViewModels.Commands
 {
     internal class Connect:ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
 
         public MainViewModel Parent { get; set; }
 
@@ -17,26 +21,27 @@ namespace P2P_Chat.ViewModels.Commands
         {
             this.Parent = parent;
         }
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
+        }
 
         public bool CanExecute(object ? parameter)
         {
-            //if (parameter != null)
+            //bool isconnected = true;
+            //if (parameter is not null)
             //{
-            //    var s = parameter as string;
-            //    s = s.Trim();
-            //    if(string.IsNullOrEmpty(s))
-            //    {
-            //        return false;
-            //    }
-            //    return true;
-
+            //    isconnected = (bool)parameter;
             //}
+
+            //return !isconnected;
             return true;
         }
 
         public void Execute(object? parameter)
         {
             Parent.establishConnection();
+            
         }
     }
 }

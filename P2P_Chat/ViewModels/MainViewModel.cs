@@ -1,4 +1,5 @@
-﻿using P2P_Chat.Models;
+﻿using Microsoft.Win32;
+using P2P_Chat.Models;
 using P2P_Chat.ViewModels.Commands;
 using System;
 using System.Collections.Generic;
@@ -6,8 +7,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Media;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,21 +23,21 @@ namespace P2P_Chat.ViewModels
     public class MainViewModel :INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-
+        int acceptconnection = 1, rejectconnection = 2, disconnect = 3, stoplistening = 4;
         private Message _messagetostore;
 
-        private bool _popupActive;
-        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected";
-        private Int32 _port = 22;
+        private bool _popupActive,connected = false;
+        private String _toIP ,_name,_messageToSend,_status="Disconnected",_search;
+        private String _port ;
 
 
         private ConnectionHandler _connection;
         private ObservableCollection<Message> _messageslist;
-        private FileWriter fileWriter;
-        private FileWriter FileWriter
+        private WritingToStorage _writingToStorage;
+        private WritingToStorage WritingToStorage
         {
-            get { return fileWriter; }
-            set { fileWriter = value; }
+            get { return _writingToStorage; }
+            set { _writingToStorage = value; }
         }
         //commands
         public ICommand MessageCommand { get; set; }
@@ -42,7 +46,20 @@ namespace P2P_Chat.ViewModels
         public ICommand AcceptConnectionCommand { get; set; }
         public ICommand DeclineConnectionCommand { get; set; }
         public ICommand DisconnectCommand { get; set; }
+        public ICommand ShowOldConversationCommand { get; set; }
 
+        public bool Connected
+        {
+            get
+            {
+                return connected;
+            }
+            set
+            {
+                connected = value;
+                OnPropertyChanged("Connected");
+            }
+        }
         public Message Messagetostore
         {
             get
@@ -54,11 +71,31 @@ namespace P2P_Chat.ViewModels
                 _messagetostore = value;
             }
         }
-        //public struct Messagelist
-        //{
-        //    public string? _messages { get; set; }
-        //    public string? _names{ get; set; }
-        //}
+        private ObservableCollection<oneConversation> convoHistory;
+        public ObservableCollection<oneConversation> ConvoHistory
+        {
+            get 
+            { 
+                return convoHistory; 
+            }
+            set
+            {
+                convoHistory = value;
+                OnPropertyChanged("ConvoHistory");
+            }
+        }
+        public String Search
+        {
+            get
+            {
+                return _search;
+            }
+            set
+            {
+                _search = value;
+                Searchnames();
+            }
+        }
         public String Status
         {
             get
@@ -95,7 +132,7 @@ namespace P2P_Chat.ViewModels
             }
         }
 
-        public Int32 Port
+        public String Port
         {
             get
             {
@@ -168,6 +205,8 @@ namespace P2P_Chat.ViewModels
             this.Connection = connectionHandler;
             // prenumere på event från _connection handler
             connectionHandler.PropertyChanged += ConnectionHandler_PropertyChanged;
+            connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
+            
 
             this.ToIPCommand = new Connect(this);
             this.MessageCommand = new SendMessageCommand(this);
@@ -175,9 +214,14 @@ namespace P2P_Chat.ViewModels
             this.AcceptConnectionCommand = new AcceptConnectionCommand(this);
             this.DeclineConnectionCommand = new DeclineConnectionCommand(this);
             this.DisconnectCommand = new DisconnectCommand(this);
-            this.FileWriter = new FileWriter();
+            this.WritingToStorage = new WritingToStorage();
+            this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
+            
+            this.ShowOldConversationCommand = new ShowOldConversationCommand(this);
             _messageslist = new ObservableCollection<Message>();
-            connectionHandler.Messageslist.CollectionChanged += Messageslist_CollectionChanged;
+            
+
+            //MessageBox.Show(this.ConvoHistory.ToString());
         }
 
         private void Messageslist_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -185,6 +229,7 @@ namespace P2P_Chat.ViewModels
             foreach (var item in e.NewItems)
             {
                 print_on_screen((Message)item);
+                Saveit((Message)item);
                 //MessageBox.Show(item.ToString());
             }
           //  MessageBox.Show(e.NewItems);
@@ -192,27 +237,44 @@ namespace P2P_Chat.ViewModels
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Call_Incoming")
+            switch (e.PropertyName)
             {
-                PopUpActive = Connection.Call_Incoming;
-            }
-            else if(e.PropertyName == "Status")
-            {
-                if (Connection.Status =="Connected")
-                {
-               
-                    fileWriter.InitConversation(Connection.Othername);
+                case "Call_Incoming":
+                    PopUpActive = Connection.Call_Incoming;break;
+                case "Status":
+                    if (Connection.Status == "Connected")
+                    {
 
-                }
-                Status = Connection.Status;
+                        WritingToStorage.InitConversation(Connection.Othername);
+                        if (Status != Connection.Status)
+                        {
+                            Application.Current.Dispatcher.Invoke((System.Action)delegate
+                            {
+                                Messageslist.Clear();
+                            });
+                        }
+                        
+
+                    }
+                    if (!Connection.Connected)
+                    {
+                        this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
+                    }
+                    Status = Connection.Status;
+                    break;
+
+                case "ErrorMessage":
+                    MessageBox.Show(Connection.ErrorMessage); break;
+
+                case "Buzz":
+                    playBuzz(); break;
+                case "Connected":
+                   // MessageBox.Show("now connected " + Connection.Connected.ToString());
+                    this.Connected = Connection.Connected; break;
+
             }
-            else if (e.PropertyName == "MessageForStore")
-            {
-                Messagetostore = Connection.MessageForStore;
-                Saveit(Messagetostore);
-            }
-           // MessageBox.Show(e. + e.PropertyName + " has changed");
-          //  throw new NotImplementedException();
+
+
         }
 
 
@@ -222,8 +284,9 @@ namespace P2P_Chat.ViewModels
         // to Model
         public void sendMessage()
         {
-            Connection.prepare_to_send(MessageToSend);
-            MessageToSend = "";
+
+           Connection.prepare_to_send(MessageToSend);
+           MessageToSend = String.Empty;
 
 
         }
@@ -237,11 +300,21 @@ namespace P2P_Chat.ViewModels
         }
         public void establishConnection()
         {
-            Connection.connect(ToIP, Port,Name);
+            if (string.IsNullOrEmpty(Port) || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(ToIP))
+            {
+                MessageBox.Show("Make sure to fill in IP, port and your name to connect.");
+                return;
+            }
+            Connection.connect(ToIP, Int32.Parse(Port), Name);
         }
         public void startListening()
         {
-            Connection.startListening(Port,Name);
+            if (string.IsNullOrEmpty(Port) || string.IsNullOrEmpty(Name))
+            {
+                MessageBox.Show("Make sure to fill in both port and your name to start listening.");
+                return;
+            }
+            Connection.startListening(Int32.Parse(Port), Name);
         }
 
         void OnPropertyChanged(string property)
@@ -253,36 +326,43 @@ namespace P2P_Chat.ViewModels
         }
         public void AcceptConnection()
         {
-            _connection.accept_connection();
+            _connection.take_action(acceptconnection);
         }
         public void DeclineConnection()
         {
-            _connection.decline_connection();
+            _connection.take_action(rejectconnection);
         }
         public void Disconnect()
         {
-            _connection.close_connection();
+            _connection.take_action(disconnect);
         }
 
         public void OnWindowClosing(object sender, CancelEventArgs e)
         {
-            _connection.close_connection();
+            _connection.take_action(stoplistening);
         }
 
         public void Saveit(Message msg)
         {
-           // FileWriter.WriteToFile(msg.msgToJson());
+            WritingToStorage.WriteToFile(msg.msgToJson());
         }
-        //protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        //{
-        //    //if (propertyName == "Search")
-        //    //{
-        //    //    FilterSearch();
-        //    //}
-        //    if (PropertyChanged != null)
-        //    {
-        //        PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        //    }
-        //}
+
+
+        public void ShowOldConversationMethod(List<Message> aList)
+        {
+            if (!Connection.Connected)
+            {
+                Messageslist.Clear();
+                aList.ToList().ForEach(a => Messageslist.Add(a)); ;
+            }
+        }
+        private void Searchnames()
+        {
+            ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.filter(Search));
+        }
+        private void playBuzz()
+        {
+            SystemSounds.Beep.Play();
+        }
     }
 }

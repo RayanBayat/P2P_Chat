@@ -19,522 +19,445 @@ using System.Timers;
 using static P2P_Chat.ViewModels.MainViewModel;
 using System.Collections.ObjectModel;
 using Application = System.Windows.Application;
+using System.Media;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace P2P_Chat.Models
 {
 
 
 
-    public class Message
-    {
 
-        public string? jsrequesttype { get; set; }
 
-        public string? jsname { get; set; }
-        public string? jsmsg { get; set; }
-        public string? jstime { get; set; } 
-
-        public JObject msgToJson()
-        {
-            return new JObject(
-                    new JProperty("name", jsname),
-                    new JProperty("msg", jsmsg)
-                    );
-        }
-
-    }
     public class ConnectionHandler : INotifyPropertyChanged
     {
+        //================================================================================================
+        //Private Variables
 
-        bool connectionisAccepted, callincoming;
-        private bool call_incoming, islistening,conencted = false;
-        private string? _status = "Disconnected", myname,othername;
-        private Message? _messages;
-        private Int32 port;
-        private String ip;
-        TcpClient? client;
-        TcpListener? server;
-        NetworkStream? stream;
+        bool _connectionIsAccepted, _callIncoming, _isListening, _connected = false, isServer;
+        string? _status = "Disconnected", _localhost = "192.168.1.240", _myname, _othername, _ip, _errorMessage;
+        ObservableCollection<Message>? _messageslist = new ObservableCollection<Message>();
+        Thread? _listenthread, _sendthread;
+        int acceptconnection = 1, rejectconnection = 2, disconnect = 3, stoplistening = 4;
+        Int32 _port, _buffersize = 524288;
+        Message? _messages;
+        TcpClient? _client;
+        TcpListener? _server;
+        NetworkStream? _stream;
+
+
+        //================================================================================================
+        //Public Variables
         public event PropertyChangedEventHandler? PropertyChanged;
-        private Message messageforstore;
-        Thread thread;
-        private ObservableCollection<Message> ?_messageslist = new ObservableCollection<Message>();
-        public ObservableCollection<Message> Messageslist
-        {
-            get
-            {
-                return _messageslist;
-            }
-            set
-            {
-                _messageslist = value;
-                //_messageslist.Add(value);
-            }
-        }
-        public String Othername
-        {
-            get
-            {
-                return othername;
-            }
-            set
-            {
-                othername = value;
-
-            }
-        }
-        public Message MessageForStore
-        {
-            get
-            {
-                return messageforstore;
-            }
-            set
-            {
-                messageforstore = value;
-                
-                OnPropertyChanged("MessageForStore");
-            }
-        }
-        public string Status
-        {
-            get
-            {
-                return _status;
-            }
-            set
-            {
-                _status = value;
-                OnPropertyChanged("Status");
-            }
-        }
-        public Message Messages
-        {
-            get
-            {
-                return _messages;
-            }
-            set
-            {
-               _messages = value;
-                OnPropertyChanged("Messages");
-            }
-        }
-        public bool Call_Incoming
-        {
-            get
-            {
-                return callincoming;
-            }
-            set
-            {
-                callincoming = value;
-               
-                OnPropertyChanged("Call_Incoming");
-            }
-        }
+        public ObservableCollection<Message> Messageslist { get { return _messageslist!; } set { _messageslist = value; } }
+        public string Othername { get { return _othername!; } set { _othername = value; } }
+        public string ErrorMessage { get { return _errorMessage!; } set { _errorMessage = value; OnPropertyChanged("ErrorMessage"); } }
+        public bool Connected { get { return _connected!; } set { _connected = value; OnPropertyChanged("Connected"); } }
+        public string Status { get { return _status!; } set { _status = value; OnPropertyChanged("Status"); } }
+        public Message Message { get { return _messages!; } set { _messages = value; OnPropertyChanged("Message"); } }
+        public bool Call_Incoming { get { return _callIncoming; } set { _callIncoming = value; OnPropertyChanged("Call_Incoming"); } }
 
 
-        public void sendMessage(String message)
+        //================================================================================================
+        //Private functions
+        private void init(string ip, Int32 port, string myname)
         {
-            // Here is the code which sends the data over the network.
-            // No user interaction shall exist in the model.
-           
-        }
-        public void connect(String ip, Int32 port,string myname)
-        {
-            this.myname = myname;
-            this.ip = ip;
-            this.port = port;
-            Thread thread = new Thread(new ThreadStart(tryconnecting));
-            thread.Name = "en annan tråd";
-            thread.Start();
-
+            this._myname = myname;
+            this._ip = ip;
+            this._port = port;
         }
 
-        private void tryconnecting()
+        //=============================
+        private Message makeMessage(string jsrequesttype, string jsname = "", string jsmsg = "")
         {
-           
+            //create messages with our protocol
+            if (jsmsg == "Buzz")
+                jsrequesttype = "Buzz";
+
+
+            var theMessage = new Message
+            {
+                jsrequesttype = jsrequesttype,
+
+                jsname = jsname,
+
+                jsmsg = jsmsg,
+
+                jstime = DateTime.Now.ToString()
+
+            };
+            return theMessage;
+        }
+        //=============================
+        private void sendWithThread(Message message)
+        {
+            //send the message with the send thread
+            _sendthread = new Thread(() => senddata(message));
+            _sendthread.Name = "sending thread";
+            _sendthread.Start();
+        }
+        //=============================
+        private void listenWithThread(bool isServer)
+        {
+            //go into listening loop with listening thread
+            _listenthread = new Thread(() => listeningloop(isServer));
+            _listenthread.Name = "listening thread";
+            _listenthread.Start();
+        }
+        //=============================
+        private void tryConnectingAsClient()
+        {
+            isServer = false;
             try
             {
-                client = new TcpClient(ip, port);
-                stream = client.GetStream();
-                var handshake = new Message
-                {
-                    jsrequesttype = "HandShake",
+                //get stream and client
+                _client = new TcpClient(_ip!, _port);
+                _stream = _client.GetStream();
 
-                    jsname = myname,
+                //make tmpstring handshakemessage
+                var handshake = makeMessage("HandShake", _myname!);
+                Message = handshake;
 
-                    jsmsg = "",
-
-                    jstime = DateTime.Now.ToString()
-
-                };
-                senddata(handshake);
-                Thread thread = new Thread(new ThreadStart(read_data));
-                Thread thread1 = new Thread(new ThreadStart(last_handshake));
-                thread.Name = "en annan tråd";
-                thread.Start();
-                thread1.Name = "last shake";
-                thread1.Start();
                 Status = "Trying to connect";
+                //setting up listening and sending threads
+                sendWithThread(Message);
+                listenWithThread(isServer);
+                // sendWithThread(handshake);
+                //changing the status
+
 
             }
             catch (SocketException e)
             {
-                MessageBox.Show("No one is listening on IP " + ip + " and Port " + port);
-
+                ErrorMessage = "No one is listening on IP " + _ip + " and Port " + _port;
             }
         }
-        public void read_data()
+        //=============================
+        private void read_data()
         {
-            while (true)
+            while (_client!.Connected)
             {
                 try
                 {
-                    Byte[] data = new Byte[256];
-
-                    // String to store the response ASCII representation.
+                    Byte[] data = new Byte[_buffersize];
                     String responseData = String.Empty;
-                    // Read the first batch of the TcpServer response bytes.
-                    if (!client.Connected)
+                    if (_stream is not null)
+                    {
+                        Int32 bytes = _stream!.Read(data, 0, data.Length);
+                        responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+                        string tmpstring = responseData;
+
+                        Message = System.Text.Json.JsonSerializer.Deserialize<Message>(tmpstring)!;
+                    }
+                    else
                     {
                         Status = "Disconnected";
-                        if (islistening)
+                        Connected = false;
+                        if (_isListening)
                         {
                             Status = "Listening";
                         }
                         break;
                     }
-                    Int32 bytes = stream.Read(data, 0, data.Length);
-                    responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-                    string a = responseData;
-                    Message? msg = System.Text.Json.JsonSerializer.Deserialize<Message>(a);
 
-                    if (msg.jsrequesttype == "BasicChat")
+
+                    if (Message!.jsrequesttype == "BasicChat")
                     {
-                        Messages = msg;
                         Application.Current.Dispatcher.Invoke((System.Action)delegate
                         {
-                            Messageslist.Add(msg);
+                            Messageslist.Add(Message);
                         });
-                        MessageForStore = msg;
-                    }
-                    else if (msg.jsrequesttype == "HandShake")
-                    {
-                        
-                        Othername = msg.jsname;
-                        Status = "Connected";
-                        conencted = true;
-                        MessageBox.Show("Connected");
 
                     }
-                    else if (msg.jsrequesttype == "Rejected")
+                    else if (Message.jsrequesttype == "HandShake")
                     {
-                        Status = "Disconnected";
-                        conencted = false;
-                        if (islistening)
-                        {
-                            Status = "Listening";
-                        }
-                        MessageBox.Show("Connection was rejected");
+
+                        Othername = Message.jsname!;
+                        Status = "Connected";
+                        Connected = true;
+
+
                     }
-                    else if(msg.jsrequesttype == "Closing_connection")
+                    else if (Message.jsrequesttype == "Rejected")
                     {
-                        Status = "Disconnected";
-                        conencted = false;
-                        if (islistening)
-                        {
-                            Status = "Listening";
-                        }
-                        MessageBox.Show("connection was closed by user");
+                        Connected = false;
+                        break;
+
+                    }
+                    else if (Message.jsrequesttype == "Closing_connection")
+                    {
+
+                        Connected = false;
                         break;
                     }
-                    
+                    else if (Message.jsrequesttype == "Buzz")
+                    {
+                        OnPropertyChanged("Buzz");
 
-
+                    }
                 }
                 catch (IOException e)
                 {
-                    Console.WriteLine("IOException: {0}", e);
+                    //ErrorMessage = "IOException: {0}" +  e;
+                    Debug.WriteLine("IOException: {0}" + e);
                 }
                 catch (ArgumentNullException e)
                 {
-                    Console.WriteLine("ArgumentNullException: {0}", e);
+                    //ErrorMessage = "ArgumentNullException: {0}" + e;
+                    Debug.WriteLine("ArgumentNullException: {0}" + e);
+
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine("SocketException: {0}", e);
+                    // ErrorMessage = "SocketException: {0}" + e;
+                    Debug.WriteLine("SocketException: {0}" + e);
+
                 }
                 catch (ObjectDisposedException e)
                 {
-                    Console.WriteLine("ObjectDisposedException: {0}", e);
+                    ErrorMessage = "ObjectDisposedException: {0}" + e;
+                    //ErrorMessage = "Message recieved doesn't follow this apps protocol, make sure the user you're trying to connect to uses same application.";
+                    Debug.WriteLine(ErrorMessage);
+
                 }
                 catch (System.Text.Json.JsonException e)
                 {
-                    Console.WriteLine("ObjectDisposedException: {0}", e);
+                    //ErrorMessage = "ObjectDisposedException: {0}" + e;
+                    ErrorMessage = "Message recieved doesn't follow this apps protocol, make sure the user you're trying to connect to uses same application.";
+                    Debug.WriteLine(ErrorMessage);
+                    break;
                 }
 
             }
-        }
-            public void prepare_to_send(String message)
-        {
-           
-            var msg = new Message
+            Status = "Disconnected";
+            if (_isListening)
             {
-                jsrequesttype = "BasicChat",
-
-                jsname = myname,
-
-                jsmsg = message,
-
-                jstime = DateTime.Now.ToString()
-
-
-            };
-            Messages = msg;
-            senddata(Messages);
-        }
-
-        private void last_handshake()
-        {
-            while(!conencted)
-            {
-
+                Status = "Listening";
             }
-            var handshake = new Message
-            {
-                jsrequesttype = "HandShake",
-
-                jsname = myname,
-
-                jsmsg = "",
-
-                jstime = DateTime.Now.ToString()
-
-
-            };
-            senddata(handshake);
         }
-        public void senddata(Message message)
+        //=============================
+        private void senddata(Message message)
         {
-            JObject conversations;
-                try
-                {
+            try
+            {
                 if (Status != "Disconnected")
                 {
-                    
-                  //  File.Create(@"details.json");
                     string json_data = System.Text.Json.JsonSerializer.Serialize(message);
                     Byte[] data = System.Text.Encoding.ASCII.GetBytes(json_data);
-                    stream.Write(data, 0, data.Length);
+                    _stream!.Write(data, 0, data.Length);
 
                     if (message.jsrequesttype == "BasicChat")
                     {
-                        MessageForStore = message;
                         Messageslist.Add(message);
                     }
-                    
+
 
 
                 }
-                }
-                catch (ArgumentNullException e)
-                {
-                    Console.WriteLine("ArgumentNullException: {0}", e);
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine("SocketException: {0}", e);
-                }
-            
-        }
-
-
-
-
-
-
-
-
-
-
-        public void startListening(Int32 port,String myname)
-        {
-            this.myname = myname;
-            try
+            }
+            catch (ArgumentNullException e)
             {
+                //ErrorMessage = "ArgumentNullException: {0}" + e;
+                Debug.WriteLine("ArgumentNullException: {0}" + e);
 
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
-                server = new TcpListener(localAddr, port);
-                server.Start();
-                thread = new Thread(new ThreadStart(listeningloop));
-                thread.Name = "en annan tråd";
-                islistening = true;
-                thread.Start();
-                Status = "Listening";
             }
             catch (SocketException e)
             {
-                MessageBox.Show("Cannot listen to Port " + port);
+                //ErrorMessage = "SocketException: {0}" + e;
+                Debug.WriteLine("SocketException: {0}" + e);
 
             }
 
         }
-        private void listeningloop()
+        //=============================
+        private void listeningloop(bool isServer)
         {
             //MessageBox.Show(Thread.CurrentThread.Name);
-            while (true)
+            if (!isServer)
             {
-                if (!Call_Incoming)
+                read_data();
+            }
+            else
+            {
+                while (_isListening)
                 {
-                    try
+                    if (_connectionIsAccepted)
                     {
-                        if(!islistening)
+                        read_data();
+                    }
+                    if (!Call_Incoming)
+                    {
+                        try
                         {
-                            break;
+                            _client = _server!.AcceptTcpClient();
+                            _stream = _client.GetStream();
+                            Call_Incoming = true;
+                            Status = "Getting a call";
+
                         }
-                        Byte[] bytes = new Byte[8096];
-                        String data = null;
+                        catch (SocketException e)
+                        {
+                            //ErrorMessage = "Cannot pick connection to " + _port;
+                            Debug.WriteLine("Cannot pick connection to " + _port);
 
-                        client = server.AcceptTcpClient();
-
-                        Call_Incoming = true;
-                        stream = client.GetStream();
-                        Status = "Getting a call";
-                    }
-                    catch (SocketException e)
-                    {
-                        MessageBox.Show("Cannot listen to Port " + port);
+                        }
 
                     }
 
                 }
 
-                
-                if (connectionisAccepted)
+            }
+
+        }
+        //=============================
+        private void accept_connection()
+        {
+            _connectionIsAccepted = true;
+            Call_Incoming = false;
+            // Call_Incoming = false;
+
+            Message = makeMessage("HandShake", _myname!);
+            senddata(Message);
+        }
+        //=============================
+        private void decline_connection()
+        {
+            Message = makeMessage("Rejected", _myname!);
+            senddata(Message);
+            _connectionIsAccepted = false;
+            Call_Incoming = false;
+            Connected = false;
+            _client!.Close();
+            Status = "Disconnected";
+            if (_isListening)
+            {
+                Status = "Listening";
+            }
+        }
+        //=============================
+        private void close_connection()
+        {
+            if (Connected)
+            {
+                Message = makeMessage("Closing_connection", _myname!);
+                senddata(Message);
+                _connectionIsAccepted = false;
+                Call_Incoming = false;
+
+                Connected = false;
+                _client!.Close();
+            }
+            Status = "Disconnected";
+            if (_isListening)
+            {
+                Status = "Listening";
+            }
+        }
+        //=============================
+        private void stopListening()
+        {
+            if (Connected)
+            {
+                _connectionIsAccepted = false;
+                Call_Incoming = false;
+                Message = makeMessage("Closing_connection", _myname!);
+                senddata(Message);
+                Connected = false;
+
+                Status = "Disconnected";
+                if (_isListening)
                 {
-
-                    read_data();
+                    Status = "Listening";
                 }
-                
-
-                
-
             }
+            _server!.Stop();
+            _isListening = false;
+        }
+        //================================================================================================
+        //Public functions
 
+        public void connect(String ip, Int32 port, string myname)
+        {
+            if (_isListening)
+            {
+                ErrorMessage = "You're trying to connect to the port " + _port + ", you're listening to this port";
+                return;
+            }
+            init(ip, port, myname);
+            Thread localthread = new Thread(() => tryConnectingAsClient());
+            localthread.Start();
 
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public void accept_connection()
+        //=============================
+        public void prepare_to_send(String message)
         {
-            connectionisAccepted = true;
-            Call_Incoming = false;
-            
- 
-            var handshake = new Message
-            {
-                jsrequesttype = "HandShake",
-
-                jsname = myname,
-
-                jsmsg = "",
-
-                jstime = DateTime.Now.ToString()
-
-
-            };
-            
-            senddata(handshake);
+            Message = makeMessage("BasicChat", _myname!, message);
+            sendWithThread(Message);
         }
-        public void decline_connection()
+        //=============================
+        public void startListening(Int32 port, String myname)
         {
-            connectionisAccepted = false;
-            Call_Incoming = false;
-            conencted = false;
-            var handshake = new Message
+            if (_isListening)
             {
-                jsrequesttype = "Rejected",
-
-                jsname = "",
-
-                jsmsg = "",
-
-                jstime = DateTime.Now.ToString()
-
-
-            };
-            senddata(handshake);
-            client.Close();
-            Status = "Disconnected";
-            if (islistening)
+                ErrorMessage = "You're already listening to Port " + _port;
+                return;
+            }
+            init(_localhost!, port, myname);
+            isServer = true;
+            try
             {
                 Status = "Listening";
+                //starting a tcp listener with the given port
+                IPAddress localAddr = IPAddress.Parse(_ip!);
+                _server = new TcpListener(localAddr, port);
+                _server.Start();
+
+                // setting up the listening loop
+                listenWithThread(isServer);
+
+                _isListening = true;
+                
             }
+            catch (SocketException e)
+            {
+                ErrorMessage = "Cannot listen to Port " + port;
+
+                Debug.WriteLine(ErrorMessage);
+            }
+
         }
-        public void close_connection()
+        //=============================
+        public void take_action(int action)
         {
-            connectionisAccepted = false;
-            Call_Incoming = false;
-            conencted = false;
-            var close_connection = new Message
+
+            Thread localthread;
+
+            if (action == acceptconnection)
             {
-                jsrequesttype = "Closing_connection",
-
-                jsname = "System",
-
-                jsmsg = "test1",
-
-                jstime = DateTime.Now.ToString()
-
-
-            };
-            senddata(close_connection);
-            client.Close();
-            Status = "Disconnected";
-            if (islistening)
-            {
-                Status = "Listening";
+                localthread = new Thread(() => accept_connection());
+                localthread.Start();
             }
-            //islistening = false;
+            else if (action == rejectconnection)
+            {
+                localthread = new Thread(() => decline_connection());
+                localthread.Start();
+            }
+            else if (action == disconnect)
+            {
+                localthread = new Thread(() => close_connection());
+                localthread.Start();
+            }
+            else if (action == stoplistening)
+            {
+                localthread = new Thread(() => stopListening());
+                localthread.Start();
+            }
+
+
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        void OnPropertyChanged(string property)
+        //=============================
+        public void OnPropertyChanged(string property)
         {
             if (PropertyChanged != null)
             {

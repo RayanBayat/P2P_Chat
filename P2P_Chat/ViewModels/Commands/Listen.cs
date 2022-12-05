@@ -9,8 +9,12 @@ namespace P2P_Chat.ViewModels.Commands
 {
     internal class Listen : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
-
+        
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
         public MainViewModel Parent { get; set; }
 
         public Listen(MainViewModel parent)
