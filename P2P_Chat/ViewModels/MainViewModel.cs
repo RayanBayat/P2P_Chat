@@ -26,9 +26,9 @@ namespace P2P_Chat.ViewModels
         int acceptconnection = 1, rejectconnection = 2, disconnect = 3, stoplistening = 4;
         private Message _messagetostore;
 
-        private bool _popupActive;
-        private String _toIP = "127.0.0.1",_name="Bob",_messageToSend,_status="Disconnected",_search;
-        private String _port = "22";
+        private bool _popupActive,connected = false;
+        private String _toIP ,_name,_messageToSend,_status="Disconnected",_search;
+        private String _port ;
 
 
         private ConnectionHandler _connection;
@@ -48,7 +48,18 @@ namespace P2P_Chat.ViewModels
         public ICommand DisconnectCommand { get; set; }
         public ICommand ShowOldConversationCommand { get; set; }
 
-
+        public bool Connected
+        {
+            get
+            {
+                return connected;
+            }
+            set
+            {
+                connected = value;
+                OnPropertyChanged("Connected");
+            }
+        }
         public Message Messagetostore
         {
             get
@@ -226,40 +237,43 @@ namespace P2P_Chat.ViewModels
 
         private void ConnectionHandler_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Call_Incoming")
+            switch (e.PropertyName)
             {
-                PopUpActive = Connection.Call_Incoming;
-            }
-            else if(e.PropertyName == "Status")
-            {
-       
-                if (Connection.Status =="Connected")
-                {
-
-                    WritingToStorage.InitConversation(Connection.Othername);
-                    if (Status != Connection.Status)
+                case "Call_Incoming":
+                    PopUpActive = Connection.Call_Incoming;break;
+                case "Status":
+                    if (Connection.Status == "Connected")
                     {
-                        Application.Current.Dispatcher.Invoke((System.Action)delegate
-                        {
-                            Messageslist.Clear();
-                        });
-                    }
 
-                }
-                if (!Connection.Connected)
-                {
-                    this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
-                }
-                Status = Connection.Status;
+                        WritingToStorage.InitConversation(Connection.Othername);
+                        if (Status != Connection.Status)
+                        {
+                            Application.Current.Dispatcher.Invoke((System.Action)delegate
+                            {
+                                Messageslist.Clear();
+                            });
+                        }
+                        
+
+                    }
+                    if (!Connection.Connected)
+                    {
+                        this.ConvoHistory = new ObservableCollection<oneConversation>(WritingToStorage.GetHistory());
+                    }
+                    Status = Connection.Status;
+                    break;
+
+                case "ErrorMessage":
+                    MessageBox.Show(Connection.ErrorMessage); break;
+
+                case "Buzz":
+                    playBuzz(); break;
+                case "Connected":
+                   // MessageBox.Show("now connected " + Connection.Connected.ToString());
+                    this.Connected = Connection.Connected; break;
+
             }
-            else if(e.PropertyName == "ErrorMessage")
-            {
-                MessageBox.Show(Connection.ErrorMessage);
-            }
-            else if(e.PropertyName == "Buzz")
-            {
-                playBuzz();
-            }
+
 
         }
 
@@ -286,10 +300,20 @@ namespace P2P_Chat.ViewModels
         }
         public void establishConnection()
         {
+            if (string.IsNullOrEmpty(Port) || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(ToIP))
+            {
+                MessageBox.Show("Make sure to fill in IP, port and your name to connect.");
+                return;
+            }
             Connection.connect(ToIP, Int32.Parse(Port), Name);
         }
         public void startListening()
         {
+            if (string.IsNullOrEmpty(Port) || string.IsNullOrEmpty(Name))
+            {
+                MessageBox.Show("Make sure to fill in both port and your name to start listening.");
+                return;
+            }
             Connection.startListening(Int32.Parse(Port), Name);
         }
 

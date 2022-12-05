@@ -36,7 +36,7 @@ namespace P2P_Chat.Models
         //Private Variables
 
         bool _connectionIsAccepted, _callIncoming, _isListening, _connected = false, isServer;
-        string? _status = "Disconnected", _localhost = "127.0.0.1", _myname, _othername, _ip, _errorMessage;
+        string? _status = "Disconnected", _localhost = "192.168.1.240", _myname, _othername, _ip, _errorMessage;
         ObservableCollection<Message>? _messageslist = new ObservableCollection<Message>();
         Thread? _listenthread, _sendthread;
         int acceptconnection = 1, rejectconnection = 2, disconnect = 3, stoplistening = 4;
@@ -53,7 +53,7 @@ namespace P2P_Chat.Models
         public ObservableCollection<Message> Messageslist { get { return _messageslist!; } set { _messageslist = value; } }
         public string Othername { get { return _othername!; } set { _othername = value; } }
         public string ErrorMessage { get { return _errorMessage!; } set { _errorMessage = value; OnPropertyChanged("ErrorMessage"); } }
-        public bool Connected { get { return _connected!; } set { _connected = value; } }
+        public bool Connected { get { return _connected!; } set { _connected = value; OnPropertyChanged("Connected"); } }
         public string Status { get { return _status!; } set { _status = value; OnPropertyChanged("Status"); } }
         public Message Message { get { return _messages!; } set { _messages = value; OnPropertyChanged("Message"); } }
         public bool Call_Incoming { get { return _callIncoming; } set { _callIncoming = value; OnPropertyChanged("Call_Incoming"); } }
@@ -153,7 +153,7 @@ namespace P2P_Chat.Models
                     else
                     {
                         Status = "Disconnected";
-                        _connected = false;
+                        Connected = false;
                         if (_isListening)
                         {
                             Status = "Listening";
@@ -181,14 +181,14 @@ namespace P2P_Chat.Models
                     }
                     else if (Message.jsrequesttype == "Rejected")
                     {
-                        _connected = false;
+                        Connected = false;
                         break;
 
                     }
                     else if (Message.jsrequesttype == "Closing_connection")
                     {
 
-                        _connected = false;
+                        Connected = false;
                         break;
                     }
                     else if (Message.jsrequesttype == "Buzz")
@@ -407,6 +407,7 @@ namespace P2P_Chat.Models
             isServer = true;
             try
             {
+                Status = "Listening";
                 //starting a tcp listener with the given port
                 IPAddress localAddr = IPAddress.Parse(_ip!);
                 _server = new TcpListener(localAddr, port);
@@ -416,7 +417,7 @@ namespace P2P_Chat.Models
                 listenWithThread(isServer);
 
                 _isListening = true;
-                Status = "Listening";
+                
             }
             catch (SocketException e)
             {

@@ -243,7 +243,7 @@
                                          Padding="5"
                                          Foreground="White"
                                          x:Name="Namebox"/>
-                                
+
                                 <TextBlock IsHitTestVisible="False"
                                            Text="Write a Message:"
                                            
@@ -363,13 +363,54 @@
             </TextBox>
             <TextBox  Margin="2,30,34,15" Style="{StaticResource ModernPort}" RenderTransformOrigin="0.5,0.5">
             </TextBox>
-            <Button Name="connect" Command="{Binding ToIPCommand}" Margin="0,14,139,40" Grid.Row="2" >Connect</Button>
-            <Button Command="{Binding ListenCommand}" Margin="56,14,83,40" Grid.Row="2" >Listen</Button>
-            <Button Command="{Binding DisconnectCommand}" Margin="109,14,20,40" Grid.Row="2" >Disconnect</Button>
+            <Button Name="connect" Command="{Binding ToIPCommand,UpdateSourceTrigger=PropertyChanged}" Margin="4,51,111,55" Grid.Row="1" Style="{StaticResource btns}" Grid.RowSpan="2"
+                    CommandParameter="{Binding Path=Connected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <!--<Image Source="/Views/Connect.png" Width="30"></Image>-->
+                Connect
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Width="70"
+                                CornerRadius="9"
+                                Background="{TemplateBinding Background}" >
+                            <ContentPresenter VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Command="{Binding ListenCommand}" Margin="4,30,36,75" Grid.Row="2"  Style="{StaticResource btns}" Grid.RowSpan="2" >
+                <!--<Image Source="/Views/Listen.png" Width="30"></Image>-->
+                Listen for connection
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Width="150"
+                                CornerRadius="9"
+                                Background="{TemplateBinding Background}" >
+                            <ContentPresenter VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Command="{Binding DisconnectCommand,UpdateSourceTrigger=PropertyChanged}" Margin="79,51,36,55" Grid.Row="1" Style="{StaticResource btns}"  Grid.RowSpan="2" 
+                    CommandParameter="{Binding Path=Connected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <!--<Image Source="/Views/disconnect.png" Width="30"></Image>-->
+                Disconnect
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Width="70"
+                                CornerRadius="9"
+                                Background="{TemplateBinding Background}" >
+                            <ContentPresenter VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
 
             <!--closing window-->
 
-            <TextBox x:Name="Search" Grid.Row="0" Grid.Column="3" Margin="0,53,11,0" RenderTransformOrigin="0.5,0.5" Style="{StaticResource ModernSearch}" > </TextBox>
+            <TextBox x:Name="Search" Grid.Row="0" Grid.Column="3" Margin="0,53,11,0" RenderTransformOrigin="0.5,0.5" Style="{StaticResource ModernSearch}" ></TextBox>
 
             <!--name-->
             <Popup IsOpen="{Binding Path=PopUpActive}" Width="150" Height="100"
@@ -393,9 +434,15 @@
                         <GridView>
                             <!--==============================================-->
 
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=jsname}" Width="50" />
+                            <GridViewColumn Header="Name" Width="80" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock TextWrapping="Wrap" Text="{Binding Path=jsname}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                             <!--==============================================-->
-                            <GridViewColumn Header="Message" Width="210">
+                            <GridViewColumn Header="Message" Width="180">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock TextWrapping="Wrap" Text="{Binding Path=jsmsg}" />
@@ -431,9 +478,17 @@
                                 <GridViewColumn.CellTemplate>
 
                                     <DataTemplate>
-                                        <Button Command="{Binding ElementName=historylist,Path=DataContext.ShowOldConversationCommand}" CommandParameter="{Binding ListOfMessages}" 
+                                        <Button Command="{Binding ElementName=historylist,Path=DataContext.ShowOldConversationCommand}" 
+                                                CommandParameter="{Binding ListOfMessages}" Style="{StaticResource btns}"
                                                 Margin="0,0,0,0"  >
                                             <TextBlock TextWrapping="Wrap" Text="{Binding Path=Name}" />
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Width="140" Height="30"  CornerRadius="9" Background="{TemplateBinding Background}" >
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
                                         </Button>
 
                                     </DataTemplate>
